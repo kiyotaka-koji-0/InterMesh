@@ -29,11 +29,11 @@ func main() {
 	if *autoDetect && (*ip == "" || *mac == "") {
 		log.Println("Auto-detecting network configuration...")
 		netInfo := mesh.DetectNetworkInfo()
-		
+
 		nodeIP = netInfo.IP
 		nodeMAC = netInfo.MAC
 		internetStatus = netInfo.HasInternet
-		
+
 		log.Printf("Detected interface: %s", netInfo.Interface)
 	}
 
