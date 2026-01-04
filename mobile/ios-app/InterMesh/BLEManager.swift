@@ -513,11 +513,14 @@ extension BLEManager: CBPeripheralManagerDelegate {
         connectedCentrals.removeAll { $0.identifier == central.identifier }
     }
     
+    // Reference to get internet status
+    var getInternetStatus: (() -> Bool)? = nil
+    
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         if request.characteristic.uuid == BLEManager.deviceInfoCharUUID {
-            let hasInternet = mobileApp?.hasInternet() ?? false
+            let hasInternet = getInternetStatus?() ?? false
             let deviceInfo = "\(localDeviceId)|\(localDeviceName)|ios|\(hasInternet)"
-            if let data = deviceInfo.data(using: .utf8) {
+            if let data = deviceInfo.data(using: String.Encoding.utf8) {
                 request.value = data
                 peripheral.respond(to: request, withResult: .success)
             } else {
