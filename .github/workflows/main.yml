@@ -1,15 +1,15 @@
 name: Build iOS App
 
-on:  
+on:   
   push:
     branches: 
       - main
   pull_request:
-    branches: 
+    branches:  
       - main
 
-jobs: 
-  build-ios:
+jobs:  
+  build-ios: 
     name: Build iOS App
     runs-on: macos-latest
 
@@ -33,7 +33,7 @@ jobs:
 
       - name: Cache Go Modules
         uses: actions/cache@v3
-        with: 
+        with:  
           path:  ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
@@ -51,19 +51,19 @@ jobs:
       - name: Build iOS App
         working-directory: mobile/ios-app
         run: |
-          xcodebuild -scheme InterMesh -sdk iphoneos -configuration Release archive -archivePath ./build/InterMesh.xcarchive
+          xcodebuild -scheme InterMesh -sdk iphoneos -configuration Release archive -archivePath ./build/InterMesh. xcarchive
 
-      - name: Export IPA
+      - name:  Export IPA
         working-directory: mobile/ios-app
         run: |
           xcodebuild -exportArchive \
-            -archivePath ./build/InterMesh. xcarchive \
+            -archivePath ./build/InterMesh.xcarchive \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath ./build \
             -allowProvisioningUpdates
 
-      - name:  Upload IPA Artifact
+      - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
-        with:
-          name: InterMesh.ipa
-          path: mobile/ios-app/build/InterMesh. ipa
+        with: 
+          name: InterMesh. ipa
+          path: mobile/ios-app/build/InterMesh.ipa
