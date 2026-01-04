@@ -44,7 +44,7 @@ jobs:
           xcodebuild -exportArchive -archivePath ./build/InterMesh.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath ./build
 
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: InterMesh.ipa
           path: ./build/InterMesh.ipa
