@@ -48,7 +48,7 @@ type AnnounceMessage struct {
 }
 
 const (
-	MulticastGroup = "224.0.0.250:9999"
+	MulticastGroup   = "224.0.0.250:9999"
 	AnnounceInterval = 5 * time.Second
 	PeerTimeout      = 15 * time.Second
 )
@@ -88,8 +88,10 @@ func (d *Discovery) Start() error {
 	d.mu.Lock()
 	if d.running {
 		d.mu.Unlock()
-		return fmt.Errorf("discovery already running")
+		return nil // Already running, not an error
 	}
+	// Reset context for restart capability
+	d.ctx, d.cancel = context.WithCancel(context.Background())
 	d.running = true
 	d.mu.Unlock()
 
@@ -136,6 +138,9 @@ func (d *Discovery) Stop() {
 	if d.conn != nil {
 		d.conn.Close()
 	}
+
+	// Reset context for restart capability
+	d.ctx, d.cancel = context.WithCancel(context.Background())
 }
 
 // GetPeers returns all discovered peers
@@ -263,7 +268,7 @@ func (d *Discovery) listenLoop() {
 func (d *Discovery) handlePeerAnnounce(msg *AnnounceMessage, ip string) {
 	d.peersMu.Lock()
 	existing, found := d.peers[msg.ID]
-	
+
 	peer := &DiscoveredPeer{
 		ID:          msg.ID,
 		Name:        msg.Name,
@@ -273,7 +278,7 @@ func (d *Discovery) handlePeerAnnounce(msg *AnnounceMessage, ip string) {
 		LastSeen:    time.Now(),
 		MAC:         "", // MAC address would need ARP lookup
 	}
-	
+
 	d.peers[msg.ID] = peer
 	d.peersMu.Unlock()
 
@@ -317,7 +322,7 @@ func (d *Discovery) timeoutLoop() {
 // checkPeerTimeouts removes peers that haven't announced recently
 func (d *Discovery) checkPeerTimeouts() {
 	now := time.Now()
-	
+
 	d.peersMu.Lock()
 	for id, peer := range d.peers {
 		if now.Sub(peer.LastSeen) > PeerTimeout {

@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <!-- App Title -->
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp"/>
+
+    <!-- Connection Status Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/statusCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@id/titleText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/statusLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status"
+                android:textSize="14sp"
+                android:textColor="@color/textSecondary"/>
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Disconnected"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"
+                android:layout_marginTop="4dp"/>
+
+            <TextView
+                android:id="@+id/deviceIdText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Device ID: Not Set"
+                android:textSize="12sp"
+                android:textColor="@color/textSecondary"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Connect Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/connectButton"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:text="Connect to Mesh"
+        android:textSize="16sp"
+        app:cornerRadius="12dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/statusCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Network Statistics Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/statsCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/connectButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Network Statistics"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/peersCountText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Connected Peers"
+                        android:textSize="12sp"
+                        android:textColor="@color/textSecondary"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/divider"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/proxiesCountText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Available Proxies"
+                        android:textSize="12sp"
+                        android:textColor="@color/textSecondary"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Internet Sharing Toggle -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/sharingCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/statsCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Share Internet"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/textPrimary"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Allow others to use your connection"
+                    android:textSize="12sp"
+                    android:textColor="@color/textSecondary"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/sharingSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Request Internet Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/requestInternetButton"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:text="Request Internet Access"
+        android:textSize="14sp"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        app:cornerRadius="12dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/sharingCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Status Message -->
+    <TextView
+        android:id="@+id/messageText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="14sp"
+        android:textColor="@color/textSecondary"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/requestInternetButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="24dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

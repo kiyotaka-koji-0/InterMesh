@@ -59,7 +59,7 @@ func (rt *RoutingTable) RemoveRoute(destination string) {
 func (rt *RoutingTable) UpdateRoute(destination, nextHop string, hopCount int, cost int64) bool {
 	rt.mu.Lock()
 	defer rt.mu.Unlock()
-	
+
 	existing, exists := rt.Routes[destination]
 	if !exists || cost < existing.Cost {
 		rt.Routes[destination] = &Route{

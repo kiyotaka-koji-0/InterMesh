@@ -1,21 +1,22 @@
+//go:build ios
 // +build ios
 
 package intermesh
 
 // iOSViewController is the main iOS view controller
 type iOSViewController struct {
-	controller    *MobileUIController
-	connectButton *iOSButton
-	sharingToggle *iOSToggle
+	controller     *MobileUIController
+	connectButton  *iOSButton
+	sharingToggle  *iOSToggle
 	internetButton *iOSButton
-	statusLabel   *iOSLabel
+	statusLabel    *iOSLabel
 }
 
 // iOSButton represents an iOS button
 type iOSButton struct {
-	Title    string
-	Enabled  bool
-	Target   func()
+	Title   string
+	Enabled bool
+	Target  func()
 }
 
 // iOSToggle represents an iOS toggle switch

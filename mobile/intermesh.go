@@ -36,7 +36,7 @@ func (mcl *MobileConnectionListener) OnConnectionError(err error) {
 // MobilePeerDiscoveryListener implements PeerDiscoveryListener for mobile callbacks
 type MobilePeerDiscoveryListener struct {
 	onPeerDiscovered func(string, string) // peerID, IP
-	onPeerLost       func(string)          // peerID
+	onPeerLost       func(string)         // peerID
 }
 
 // OnPeerDiscovered is called when a peer is discovered

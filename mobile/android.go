@@ -1,31 +1,32 @@
+//go:build android
 // +build android
 
 package intermesh
 
 // AndroidActivity is the main Android activity
 type AndroidActivity struct {
-	controller           *MobileUIController
-	connectButton        *AndroidButton
-	sharingToggle        *AndroidToggle
-	internetButton       *AndroidButton
-	statusTextView       *AndroidTextView
-	proxyCountTextView   *AndroidTextView
-	peerCountTextView    *AndroidTextView
+	controller         *MobileUIController
+	connectButton      *AndroidButton
+	sharingToggle      *AndroidToggle
+	internetButton     *AndroidButton
+	statusTextView     *AndroidTextView
+	proxyCountTextView *AndroidTextView
+	peerCountTextView  *AndroidTextView
 }
 
 // AndroidButton represents an Android button
 type AndroidButton struct {
-	Title       string
-	Enabled     bool
-	OnClick     func()
+	Title   string
+	Enabled bool
+	OnClick func()
 }
 
 // AndroidToggle represents an Android toggle switch
 type AndroidToggle struct {
-	Title       string
-	Enabled     bool
-	Checked     bool
-	OnChecked   func(bool)
+	Title     string
+	Enabled   bool
+	Checked   bool
+	OnChecked func(bool)
 }
 
 // AndroidTextView represents an Android text view
@@ -38,13 +39,13 @@ func NewAndroidActivity(app *MobileApp) *AndroidActivity {
 	controller := NewMobileUIController(app)
 
 	activity := &AndroidActivity{
-		controller:          controller,
-		connectButton:       &AndroidButton{Title: "Connect"},
-		sharingToggle:       &AndroidToggle{Title: "Share Internet"},
-		internetButton:      &AndroidButton{Title: "Request Internet"},
-		statusTextView:      &AndroidTextView{},
-		proxyCountTextView:  &AndroidTextView{},
-		peerCountTextView:   &AndroidTextView{},
+		controller:         controller,
+		connectButton:      &AndroidButton{Title: "Connect"},
+		sharingToggle:      &AndroidToggle{Title: "Share Internet"},
+		internetButton:     &AndroidButton{Title: "Request Internet"},
+		statusTextView:     &AndroidTextView{},
+		proxyCountTextView: &AndroidTextView{},
+		peerCountTextView:  &AndroidTextView{},
 	}
 
 	// Setup button click listeners

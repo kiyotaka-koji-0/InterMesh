@@ -86,11 +86,11 @@ func (n *Node) GetInternetStatus() bool {
 
 // Manager handles mesh network operations
 type Manager struct {
-	Node    *Node
-	Peers   map[string]*Peer
-	mu      sync.RWMutex
-	ctx     context.Context
-	cancel  context.CancelFunc
+	Node   *Node
+	Peers  map[string]*Peer
+	mu     sync.RWMutex
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 // NewManager creates a new mesh manager

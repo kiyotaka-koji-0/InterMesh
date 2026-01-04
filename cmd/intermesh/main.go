@@ -15,15 +15,42 @@ func main() {
 	// Command-line flags
 	nodeID := flag.String("id", "node-1", "Unique identifier for this node")
 	nodeName := flag.String("name", "InterMesh Node", "Human-readable name for this node")
-	ip := flag.String("ip", "192.168.1.1", "IP address of this node")
-	mac := flag.String("mac", "00:00:00:00:00:00", "MAC address of this node")
-	hasInternet := flag.Bool("internet", false, "Whether this node has internet connectivity")
+	ip := flag.String("ip", "", "IP address of this node (auto-detected if empty)")
+	mac := flag.String("mac", "", "MAC address of this node (auto-detected if empty)")
+	hasInternet := flag.Bool("internet", false, "Force internet status (auto-detected if not set)")
+	autoDetect := flag.Bool("auto", true, "Auto-detect network configuration")
 
 	flag.Parse()
 
+	// Auto-detect network info if enabled
+	var nodeIP, nodeMAC string
+	var internetStatus bool
+
+	if *autoDetect && (*ip == "" || *mac == "") {
+		log.Println("Auto-detecting network configuration...")
+		netInfo := mesh.DetectNetworkInfo()
+		
+		nodeIP = netInfo.IP
+		nodeMAC = netInfo.MAC
+		internetStatus = netInfo.HasInternet
+		
+		log.Printf("Detected interface: %s", netInfo.Interface)
+	}
+
+	// Override with flags if provided
+	if *ip != "" {
+		nodeIP = *ip
+	}
+	if *mac != "" {
+		nodeMAC = *mac
+	}
+	if *hasInternet {
+		internetStatus = true
+	}
+
 	// Create the node
-	node := mesh.NewNode(*nodeID, *nodeName, *ip, *mac)
-	node.SetInternetStatus(*hasInternet)
+	node := mesh.NewNode(*nodeID, *nodeName, nodeIP, nodeMAC)
+	node.SetInternetStatus(internetStatus)
 
 	log.Printf("Starting InterMesh node: %s (%s)", node.Name, node.ID)
 	log.Printf("IP: %s, MAC: %s", node.IP, node.MAC)

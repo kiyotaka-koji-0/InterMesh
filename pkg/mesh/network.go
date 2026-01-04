@@ -7,13 +7,13 @@ import (
 
 // PersonalNetwork represents a sub-mesh group (personal network)
 type PersonalNetwork struct {
-	ID          string
-	Name        string
-	Owner       string
-	CreatedAt   time.Time
-	Members     map[string]*NetworkMember
-	Policies    *NetworkPolicy
-	mu          sync.RWMutex
+	ID        string
+	Name      string
+	Owner     string
+	CreatedAt time.Time
+	Members   map[string]*NetworkMember
+	Policies  *NetworkPolicy
+	mu        sync.RWMutex
 }
 
 // NetworkMember represents a member in a personal network

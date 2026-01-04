@@ -24,11 +24,11 @@ type InternetProxy struct {
 
 // ProxyClient represents a client using our internet
 type ProxyClient struct {
-	PeerID      string
-	Authorized  bool
-	BytesSent   uint64
-	BytesRecv   uint64
-	Connected   time.Time
+	PeerID     string
+	Authorized bool
+	BytesSent  uint64
+	BytesRecv  uint64
+	Connected  time.Time
 }
 
 // InternetClient handles connecting through a proxy for internet access
@@ -313,10 +313,10 @@ func (c *InternetClient) MakeRequest(url string) (*http.Response, error) {
 func CheckInternetConnectivity() bool {
 	// Try to connect to common DNS servers
 	timeout := 3 * time.Second
-	
+
 	servers := []string{
-		"8.8.8.8:53",      // Google DNS
-		"1.1.1.1:53",      // Cloudflare DNS
+		"8.8.8.8:53",        // Google DNS
+		"1.1.1.1:53",        // Cloudflare DNS
 		"208.67.222.222:53", // OpenDNS
 	}
 

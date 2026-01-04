@@ -46,7 +46,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
     // InterMesh AAR library
-    implementation files('../../../output/intermesh.aar')
+    implementation files('../../output/intermesh.aar')
     
     // Testing
     testImplementation 'junit:junit:4.13.2'

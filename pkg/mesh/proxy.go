@@ -7,17 +7,17 @@ import (
 
 // ProxyConnection represents a connection through a proxy
 type ProxyConnection struct {
-	ClientID    string
-	ProxyID     string
-	EstablishedAt time.Time
+	ClientID         string
+	ProxyID          string
+	EstablishedAt    time.Time
 	BytesTransferred int64
-	LastActivity time.Time
+	LastActivity     time.Time
 }
 
 // ProxyManager manages proxy connections and internet sharing
 type ProxyManager struct {
 	Node        *Node
-	Proxies     map[string]*Peer       // Available proxy peers
+	Proxies     map[string]*Peer            // Available proxy peers
 	Connections map[string]*ProxyConnection // Active proxy connections
 	mu          sync.RWMutex
 }
@@ -62,20 +62,20 @@ func (pm *ProxyManager) GetAvailableProxies() []*Peer {
 func (pm *ProxyManager) CreateProxyConnection(clientID, proxyID string) (*ProxyConnection, error) {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
-	
+
 	// Verify proxy exists and has internet
 	proxy, exists := pm.Proxies[proxyID]
 	if !exists || !proxy.HasInternet {
 		return nil, ErrProxyNotAvailable
 	}
-	
+
 	connection := &ProxyConnection{
 		ClientID:      clientID,
 		ProxyID:       proxyID,
 		EstablishedAt: time.Now(),
 		LastActivity:  time.Now(),
 	}
-	
+
 	connID := clientID + "-" + proxyID
 	pm.Connections[connID] = connection
 	return connection, nil
@@ -126,17 +126,17 @@ func (pm *ProxyManager) UpdateProxyActivity(clientID, proxyID string, bytesTrans
 func (pm *ProxyManager) SelectBestProxy() (*Peer, error) {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
-	
+
 	var bestProxy *Peer
 	var bestSignal int = -150 // Worse than any real RSSI
-	
+
 	for _, proxy := range pm.Proxies {
 		if proxy.HasInternet && proxy.RSSI > bestSignal {
 			bestProxy = proxy
 			bestSignal = proxy.RSSI
 		}
 	}
-	
+
 	if bestProxy == nil {
 		return nil, ErrNoAvailableProxy
 	}
@@ -145,39 +145,39 @@ func (pm *ProxyManager) SelectBestProxy() (*Peer, error) {
 
 // ProxyStatistics tracks statistics for a proxy
 type ProxyStatistics struct {
-	ProxyID           string
-	ActiveConnections int
+	ProxyID               string
+	ActiveConnections     int
 	TotalBytesTransferred int64
-	UpTime            time.Duration
+	UpTime                time.Duration
 }
 
 // GetProxyStatistics returns statistics for a specific proxy
 func (pm *ProxyManager) GetProxyStatistics(proxyID string) *ProxyStatistics {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
-	
+
 	proxy, exists := pm.Proxies[proxyID]
 	if !exists {
 		return nil
 	}
-	
+
 	activeConnections := 0
 	totalBytes := int64(0)
-	
+
 	for _, conn := range pm.Connections {
 		if conn.ProxyID == proxyID {
 			activeConnections++
 			totalBytes += conn.BytesTransferred
 		}
 	}
-	
+
 	upTime := time.Since(time.Unix(proxy.LastSeen/1000, 0))
-	
+
 	return &ProxyStatistics{
-		ProxyID:           proxyID,
-		ActiveConnections: activeConnections,
+		ProxyID:               proxyID,
+		ActiveConnections:     activeConnections,
 		TotalBytesTransferred: totalBytes,
-		UpTime:            upTime,
+		UpTime:                upTime,
 	}
 }
 

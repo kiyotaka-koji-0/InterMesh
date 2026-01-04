@@ -1,0 +1,27 @@
+R_DEF: Internal format may change without notice
+local
+color accent
+color background
+color divider
+color primary
+color primaryDark
+color textPrimary
+color textSecondary
+id connectButton
+id deviceIdText
+id messageText
+id peersCountText
+id proxiesCountText
+id requestInternetButton
+id sharingCard
+id sharingSwitch
+id statsCard
+id statusCard
+id statusLabel
+id statusText
+id titleText
+layout activity_main
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_name
+style Theme.InterMesh

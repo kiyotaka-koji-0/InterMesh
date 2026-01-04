@@ -35,10 +35,10 @@ type Connection struct {
 
 // Message represents a message sent between peers
 type Message struct {
-	Type      string            `json:"type"`     // "data", "route", "proxy_request", etc.
-	Source    string            `json:"source"`   // Source node ID
-	Dest      string            `json:"dest"`     // Destination node ID
-	Payload   []byte            `json:"payload"`  // Message payload
+	Type      string            `json:"type"`    // "data", "route", "proxy_request", etc.
+	Source    string            `json:"source"`  // Source node ID
+	Dest      string            `json:"dest"`    // Destination node ID
+	Payload   []byte            `json:"payload"` // Message payload
 	Timestamp time.Time         `json:"timestamp"`
 	Metadata  map[string]string `json:"metadata,omitempty"`
 }
@@ -72,9 +72,11 @@ func (t *Transport) Start() error {
 	t.mu.Lock()
 	if t.running {
 		t.mu.Unlock()
-		return fmt.Errorf("transport already running")
+		return nil // Already running, not an error
 	}
 	t.running = true
+	// Reset context for restart
+	t.ctx, t.cancel = context.WithCancel(context.Background())
 	t.mu.Unlock()
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", t.port))

@@ -9,23 +9,23 @@ import (
 
 // MeshApp represents the main mesh application instance for mobile devices
 type MeshApp struct {
-	Node                    *Node
-	Manager                 *Manager
-	Router                  *Router
-	ProxyManager            *ProxyManager
-	PersonalNetworkMgr      *PersonalNetworkManager
-	Discovery               *Discovery
-	Transport               *Transport
-	InternetProxy           *InternetProxy
-	InternetClient          *InternetClient
-	IsConnected             bool
-	IsInternetSharing       bool
-	DiscoveredPeers         map[string]*Peer
-	ctx                     context.Context
-	cancel                  context.CancelFunc
-	mu                      sync.RWMutex
-	connectionListeners     []ConnectionListener
-	peerDiscoveryListeners  []PeerDiscoveryListener
+	Node                   *Node
+	Manager                *Manager
+	Router                 *Router
+	ProxyManager           *ProxyManager
+	PersonalNetworkMgr     *PersonalNetworkManager
+	Discovery              *Discovery
+	Transport              *Transport
+	InternetProxy          *InternetProxy
+	InternetClient         *InternetClient
+	IsConnected            bool
+	IsInternetSharing      bool
+	DiscoveredPeers        map[string]*Peer
+	ctx                    context.Context
+	cancel                 context.CancelFunc
+	mu                     sync.RWMutex
+	connectionListeners    []ConnectionListener
+	peerDiscoveryListeners []PeerDiscoveryListener
 }
 
 // ConnectionListener is called when connection state changes
@@ -42,28 +42,28 @@ type PeerDiscoveryListener interface {
 
 // NetworkStats holds current network statistics
 type NetworkStats struct {
-	NodeID                  string
-	PeerCount               int
-	AvailableProxies        int
-	InternetStatus          bool
-	InternetSharingEnabled  bool
-	ConnectedNetworks       int
-	DataTransferred         int64
-	LastUpdate              time.Time
+	NodeID                 string
+	PeerCount              int
+	AvailableProxies       int
+	InternetStatus         bool
+	InternetSharingEnabled bool
+	ConnectedNetworks      int
+	DataTransferred        int64
+	LastUpdate             time.Time
 }
 
 // NewMeshApp creates a new mesh application instance
 func NewMeshApp(nodeID, nodeName, ip, mac string) *MeshApp {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	node := NewNode(nodeID, nodeName, ip, mac)
-	
+
 	// Create networking components
 	discovery := NewDiscovery(nodeID, nodeName, DefaultPort, false)
 	transport := NewTransport(nodeID, DefaultPort)
 	internetProxy := NewInternetProxy(nodeID, transport)
 	internetClient := NewInternetClient(nodeID)
-	
+
 	return &MeshApp{
 		Node:                   node,
 		Manager:                NewManager(node),
@@ -88,11 +88,11 @@ func NewMeshApp(nodeID, nodeName, ip, mac string) *MeshApp {
 func (ma *MeshApp) Start() error {
 	ma.mu.Lock()
 	defer ma.mu.Unlock()
-	
+
 	// Check for internet connectivity
 	hasInternet := CheckInternetConnectivity()
 	ma.Node.HasInternet = hasInternet
-	
+
 	// Setup discovery callbacks
 	ma.Discovery.SetCallbacks(
 		func(peer *DiscoveredPeer) {
@@ -102,25 +102,25 @@ func (ma *MeshApp) Start() error {
 			ma.handlePeerLost(peerID)
 		},
 	)
-	
+
 	// Setup transport message handler
 	ma.Transport.SetMessageHandler(func(peerID string, msg *Message) {
 		ma.handleMessage(peerID, msg)
 	})
-	
+
 	// Start transport layer
 	if err := ma.Transport.Start(); err != nil {
 		ma.notifyConnectionError(err)
 		return fmt.Errorf("failed to start transport: %w", err)
 	}
-	
+
 	// Start discovery
 	if err := ma.Discovery.Start(); err != nil {
 		ma.Transport.Stop()
 		ma.notifyConnectionError(err)
 		return fmt.Errorf("failed to start discovery: %w", err)
 	}
-	
+
 	// Start manager
 	if err := ma.Manager.Start(ma.ctx); err != nil {
 		ma.Discovery.Stop()
@@ -128,14 +128,14 @@ func (ma *MeshApp) Start() error {
 		ma.notifyConnectionError(err)
 		return err
 	}
-	
+
 	ma.IsConnected = true
 	ma.notifyConnectionChanged(true)
-	
+
 	// Start background tasks
 	go ma.internetCheckLoop()
 	go ma.routingUpdateLoop()
-	
+
 	return nil
 }
 
@@ -143,18 +143,20 @@ func (ma *MeshApp) Start() error {
 func (ma *MeshApp) Stop() {
 	ma.mu.Lock()
 	defer ma.mu.Unlock()
-	
+
 	// Stop all networking components
 	ma.Discovery.Stop()
 	ma.Transport.Stop()
 	ma.InternetProxy.Disable()
 	ma.InternetClient.Disconnect()
 	ma.Manager.Stop()
-	
+
 	ma.IsConnected = false
 	ma.IsInternetSharing = false
 	ma.cancel()
-	
+	// Reset context for restart
+	ma.ctx, ma.cancel = context.WithCancel(context.Background())
+
 	ma.notifyConnectionChanged(false)
 }
 
@@ -173,16 +175,16 @@ func (ma *MeshApp) EnableInternetSharing() bool {
 	ma.mu.Lock()
 	hasInternet := ma.Node.HasInternet
 	ma.mu.Unlock()
-	
+
 	if !hasInternet {
 		return false
 	}
-	
+
 	// Enable proxy server
 	if err := ma.InternetProxy.Enable(); err != nil {
 		return false
 	}
-	
+
 	// Register as proxy in proxy manager
 	proxyPeer := &Peer{
 		NodeID:      ma.Node.ID,
@@ -192,14 +194,14 @@ func (ma *MeshApp) EnableInternetSharing() bool {
 		LastSeen:    time.Now().Unix(),
 	}
 	ma.ProxyManager.RegisterProxy(proxyPeer)
-	
+
 	// Update discovery to announce internet availability
 	ma.Discovery.UpdateInternetStatus(true)
-	
+
 	ma.mu.Lock()
 	ma.IsInternetSharing = true
 	ma.mu.Unlock()
-	
+
 	return true
 }
 
@@ -208,7 +210,7 @@ func (ma *MeshApp) DisableInternetSharing() {
 	ma.InternetProxy.Disable()
 	ma.ProxyManager.UnregisterProxy(ma.Node.ID)
 	ma.Discovery.UpdateInternetStatus(false)
-	
+
 	ma.mu.Lock()
 	ma.IsInternetSharing = false
 	ma.mu.Unlock()
@@ -219,11 +221,11 @@ func (ma *MeshApp) RequestInternetAccess() bool {
 	ma.mu.RLock()
 	hasInternet := ma.Node.HasInternet
 	ma.mu.RUnlock()
-	
+
 	if hasInternet {
 		return true // Already have internet
 	}
-	
+
 	// Find available proxy from discovered peers
 	peers := ma.Discovery.GetPeers()
 	var proxyPeer *DiscoveredPeer
@@ -233,21 +235,21 @@ func (ma *MeshApp) RequestInternetAccess() bool {
 			break
 		}
 	}
-	
+
 	if proxyPeer == nil {
 		return false // No proxy available
 	}
-	
+
 	// Connect to peer first
 	if err := ma.Transport.ConnectToPeer(proxyPeer.ID, proxyPeer.IP, proxyPeer.Port); err != nil {
 		return false
 	}
-	
+
 	// Connect to proxy
 	if err := ma.InternetClient.ConnectToProxy(proxyPeer.ID, proxyPeer.IP, ProxyPort); err != nil {
 		return false
 	}
-	
+
 	// Send proxy request message
 	msg := &Message{
 		Type:      "proxy_request",
@@ -256,7 +258,7 @@ func (ma *MeshApp) RequestInternetAccess() bool {
 		Timestamp: time.Now(),
 	}
 	ma.Transport.SendMessage(proxyPeer.ID, msg)
-	
+
 	return true
 }
 
@@ -264,7 +266,7 @@ func (ma *MeshApp) RequestInternetAccess() bool {
 func (ma *MeshApp) GetNetworkStats() *NetworkStats {
 	ma.mu.RLock()
 	defer ma.mu.RUnlock()
-	
+
 	connectedPeers := ma.Transport.GetConnectedPeers()
 	availableProxies := len(ma.Discovery.GetPeers())
 	for _, peer := range ma.Discovery.GetPeers() {
@@ -272,7 +274,7 @@ func (ma *MeshApp) GetNetworkStats() *NetworkStats {
 			availableProxies--
 		}
 	}
-	
+
 	return &NetworkStats{
 		NodeID:                 ma.Node.ID,
 		PeerCount:              len(connectedPeers),
@@ -293,13 +295,13 @@ func (ma *MeshApp) GetConnectedPeers() []string {
 func (ma *MeshApp) GetAvailableProxies() []string {
 	peers := ma.Discovery.GetPeers()
 	proxies := make([]string, 0)
-	
+
 	for _, peer := range peers {
 		if peer.HasInternet {
 			proxies = append(proxies, peer.ID)
 		}
 	}
-	
+
 	return proxies
 }
 
@@ -361,20 +363,20 @@ func (ma *MeshApp) handlePeerDiscovered(peer *DiscoveredPeer) {
 		HasInternet: peer.HasInternet,
 		LastSeen:    time.Now().Unix(),
 	}
-	
+
 	ma.mu.Lock()
 	ma.DiscoveredPeers[peer.ID] = meshPeer
 	ma.mu.Unlock()
-	
+
 	// Try to connect to the peer
 	if err := ma.Transport.ConnectToPeer(peer.ID, peer.IP, peer.Port); err == nil {
 		// Add to router
 		ma.Router.UpdateRoute(peer.ID, peer.ID, 1, 10*time.Millisecond)
-		
+
 		// Notify listeners
 		ma.notifyPeerDiscovered(meshPeer)
 	}
-	
+
 	// If peer has internet, register as proxy
 	if peer.HasInternet {
 		proxyPeer := &Peer{
@@ -392,16 +394,16 @@ func (ma *MeshApp) handlePeerLost(peerID string) {
 	ma.mu.Lock()
 	delete(ma.DiscoveredPeers, peerID)
 	ma.mu.Unlock()
-	
+
 	// Disconnect from peer
 	ma.Transport.DisconnectPeer(peerID)
-	
+
 	// Remove from router
 	ma.Router.RemoveRoute(peerID)
-	
+
 	// Unregister proxy if applicable
 	ma.ProxyManager.UnregisterProxy(peerID)
-	
+
 	// Notify listeners
 	ma.notifyPeerLost(peerID)
 }
@@ -423,10 +425,10 @@ func (ma *MeshApp) handleProxyRequest(peerID string, msg *Message) {
 	if !ma.InternetProxy.IsEnabled() {
 		return
 	}
-	
+
 	// Authorize the client
 	ma.InternetProxy.AuthorizeClient(peerID)
-	
+
 	// Send response
 	response := &Message{
 		Type:      "proxy_response",
@@ -461,22 +463,22 @@ func (ma *MeshApp) handleRouteUpdate(peerID string, msg *Message) {
 func (ma *MeshApp) internetCheckLoop() {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ma.ctx.Done():
 			return
 		case <-ticker.C:
 			hasInternet := CheckInternetConnectivity()
-			
+
 			ma.mu.Lock()
 			changed := ma.Node.HasInternet != hasInternet
 			ma.Node.HasInternet = hasInternet
 			ma.mu.Unlock()
-			
+
 			if changed {
 				ma.Discovery.UpdateInternetStatus(hasInternet)
-				
+
 				if hasInternet && ma.IsInternetSharing {
 					// Re-enable sharing if it was enabled
 					ma.InternetProxy.Enable()
@@ -492,7 +494,7 @@ func (ma *MeshApp) internetCheckLoop() {
 func (ma *MeshApp) routingUpdateLoop() {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ma.ctx.Done():
