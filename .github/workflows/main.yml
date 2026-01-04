@@ -42,7 +42,7 @@ jobs:
       - name: Build iOS Framework
         run: |
           mkdir -p mobile/output
-          gomobile bind -target=ios -o mobile/output/Intermesh.xcframework ./mobile/output
+          gomobile bind -target=ios -o mobile/output/Intermesh.xcframework ./mobile
 
       - name: Set up Xcode
         run: |
