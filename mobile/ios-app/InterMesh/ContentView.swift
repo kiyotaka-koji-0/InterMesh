@@ -163,7 +163,6 @@ struct ContentView: View {
                                     }
                                 }
                             }
-                            }
                         }
                     }
                     .padding()
@@ -618,17 +617,22 @@ class MeshManager: ObservableObject {
         guard let app = mobileApp else { return }
         
         var error: NSError?
-        let result = app.requestInternetAccess(&error)
-        if let error = error {
-            errorMessage = error.localizedDescription
-            showError = true
-        } else if let result = result, (result.hasPrefix("Error") || result.hasPrefix("error")) {
-            errorMessage = result
-            showError = true
+        if let result = app.requestInternetAccess(&error) {
+            if let error = error {
+                errorMessage = error.localizedDescription
+                showError = true
+            } else {
+                successMessage = result
+                showSuccess = true
+                statusMessage = "Connected to internet proxy"
+            }
         } else {
-            successMessage = result ?? "Connected to proxy"
-            showSuccess = true
-            statusMessage = "Connected to internet proxy"
+            if let error = error {
+                errorMessage = error.localizedDescription
+            } else {
+                errorMessage = "Failed to connect to proxy"
+            }
+            showError = true
         }
     }
     
