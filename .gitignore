@@ -36,6 +36,22 @@ coverage.html
 *.aar
 *.jar
 
+# iOS build artifacts
+mobile/output/
+mobile/ios-app/build/
+mobile/ios-app/DerivedData/
+*.xcarchive
+*.ipa
+xcuserdata/
+*.xcworkspace
+
+# Android build artifacts
+mobile/android-app/.gradle/
+mobile/android-app/build/
+mobile/android-app/app/build/
+mobile/android-app/local.properties
+*.apk
+
 # Environment files
 .env
 .env.local

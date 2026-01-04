@@ -1,63 +1,105 @@
-name: Build iOS App
+name: Build iOS Framework and App
 
 on:
   push:
     branches:
       - main
+      - 'copilot/**'
   pull_request:
     branches:
       - main
 
 jobs:
-  build-ios:
-    name: Build iOS App
+  build-ios-framework:
+    name: Build iOS Framework
     runs-on: macos-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21
+          go-version: '1.25'
           check-latest: true
 
-      - name: Install gomobile
-        run: |
-          go install golang.org/x/mobile/cmd/gomobile@latest
-          gomobile init
-
-      - name: Verify Go Version
-        run: go version
-
       - name: Cache Go Modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init
+
+      - name: Verify Go Dependencies
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Create output directory
+        run: mkdir -p mobile/output
+
       - name: Build iOS Framework
         run: |
-          gomobile bind -target=ios -o mobile/ios/InterMesh.xcframework ./mobile
+          gomobile bind -target=ios -o mobile/output/Intermesh.xcframework ./mobile
+
+      - name: Upload iOS Framework
+        uses: actions/upload-artifact@v4
+        with:
+          name: intermesh-ios-framework
+          path: mobile/output/Intermesh.xcframework
+
+  build-ios-app:
+    name: Build iOS App
+    runs-on: macos-latest
+    needs: build-ios-framework
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download iOS Framework
+        uses: actions/download-artifact@v4
+        with:
+          name: intermesh-ios-framework
+          path: mobile/output/Intermesh.xcframework
 
       - name: Set up Xcode
         run: |
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
 
       - name: Build iOS App
+        working-directory: mobile/ios-app
         run: |
-          xcodebuild -scheme YourAppScheme -sdk iphoneos -configuration Release archive -archivePath ./build/InterMesh.xcarchive
+          xcodebuild clean build \
+            -scheme InterMesh \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath ./build/InterMesh.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Export IPA
+        working-directory: mobile/ios-app
         run: |
-          xcodebuild -exportArchive -archivePath ./build/InterMesh.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath ./build
+          xcodebuild -exportArchive \
+            -archivePath ./build/InterMesh.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath ./build \
+            -allowProvisioningUpdates
 
-      - name: Upload IPA Artifact
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: InterMesh.ipa
-          path: ./build/InterMesh.ipa
+          name: InterMesh-iOS-App
+          path: mobile/ios-app/build/InterMesh.ipa
 

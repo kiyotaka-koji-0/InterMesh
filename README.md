@@ -57,12 +57,24 @@ adb install mobile/android-app/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ### For iOS (macOS or GitHub Actions):
-```bash
-# On macOS:
-gomobile bind -target=ios -o Intermesh.xcframework ./mobile
 
-# Or use GitHub Actions (see .github/workflows/ios-build.yml)
+**Option 1: Using macOS**
+```bash
+# Build the framework and app
+./build-ios.sh
+
+# Then open in Xcode
+open mobile/ios-app/InterMesh.xcodeproj
+# Connect iPad, select it in Xcode, and click Run ▶️
 ```
+
+**Option 2: Using GitHub Actions (Automatic)**
+- Push to main branch or create a pull request
+- GitHub Actions automatically builds the iOS app
+- Download the IPA from the Actions artifacts
+- Install using Xcode: Window > Devices and Simulators > drag IPA to your iPad
+
+📱 **Complete iOS installation guide**: [IOS_INSTALLATION_GUIDE.md](IOS_INSTALLATION_GUIDE.md)
 
 📖 **Complete build guide**: [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)
 
