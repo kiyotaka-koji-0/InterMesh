@@ -21,13 +21,13 @@ struct ContentView: View {
                     .padding(.top, 20)
                 
                 // Device Info Card
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: . leading, spacing: 10) {
                     Text("Device Information")
                         .font(.headline)
                     
                     HStack {
                         Text("Device ID:")
-                            . foregroundColor(.gray)
+                            .foregroundColor(.gray)
                         Spacer()
                         Text(meshManager.deviceID)
                             .fontWeight(.medium)
@@ -42,33 +42,33 @@ struct ContentView: View {
                             .fontWeight(.medium)
                     }
                 }
-                .padding()
-                .background(Color(.systemGray6))
+                . padding()
+                .background(Color(. systemGray6))
                 .cornerRadius(12)
                 .padding(.horizontal)
                 
                 // Statistics Card
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment:  .leading, spacing: 10) {
                     Text("Network Statistics")
                         .font(.headline)
                     
                     HStack {
-                        VStack(alignment:  .leading) {
+                        VStack(alignment: .leading) {
                             Text("\(meshManager.peerCount)")
-                                .font(.system(size: 32, weight:  .bold))
+                                .font(.system(size: 32, weight: .bold))
                             Text("Connected Peers")
-                                . font(.caption)
-                                . foregroundColor(.gray)
+                                .font(.caption)
+                                .foregroundColor(.gray)
                         }
                         
                         Spacer()
                         
-                        VStack(alignment: . leading) {
+                        VStack(alignment: .leading) {
                             Text("\(meshManager.proxyCount)")
-                                .font(.system(size: 32, weight: . bold))
+                                .font(.system(size: 32, weight: .bold))
                             Text("Available Proxies")
-                                . font(.caption)
-                                . foregroundColor(.gray)
+                                .font(.caption)
+                                .foregroundColor(.gray)
                         }
                     }
                 }
@@ -79,7 +79,7 @@ struct ContentView: View {
                 
                 // Internet Sharing Toggle
                 VStack(spacing: 10) {
-                    Toggle("Share Internet", isOn:  $meshManager.isSharingInternet)
+                    Toggle("Share Internet", isOn: $meshManager.isSharingInternet)
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
@@ -87,50 +87,50 @@ struct ContentView: View {
                             meshManager.toggleInternetSharing(newValue)
                         }
                 }
-                .padding(. horizontal)
+                .padding(.horizontal)
                 
                 Spacer()
                 
                 // Action Buttons
-                VStack(spacing: 15) {
+                VStack(spacing:  15) {
                     // Connect/Disconnect Button
                     Button(action: {
                         meshManager.toggleConnection()
                     }) {
-                        Text(meshManager.isConnected ?  "Disconnect from Mesh" :  "Connect to Mesh")
+                        Text(meshManager.isConnected ? "Disconnect from Mesh" : "Connect to Mesh")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(meshManager.isConnected ?  Color.red : Color.blue)
-                            .foregroundColor(. white)
+                            .background(meshManager.isConnected ? Color. red : Color.blue)
+                            .foregroundColor(.white)
                             .cornerRadius(12)
                     }
                     
                     // Request Internet Button
-                    Button(action:  {
+                    Button(action: {
                         meshManager.requestInternetAccess()
                     }) {
                         Text("Request Internet Access")
                             .fontWeight(.semibold)
-                            .frame(maxWidth: . infinity)
+                            .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color. green)
+                            .background(Color.green)
                             .foregroundColor(.white)
-                            . cornerRadius(12)
+                            .cornerRadius(12)
                     }
-                    .disabled(!meshManager.isConnected)
-                    .opacity(meshManager.isConnected ? 1.0 : 0.5)
+                    . disabled(! meshManager.isConnected)
+                    . opacity(meshManager.isConnected ?  1.0 : 0.5)
                 }
                 .padding(.horizontal)
-                .padding(.bottom, 30)
+                . padding(.bottom, 30)
                 
                 // Status Message
-                if !meshManager. statusMessage.isEmpty {
+                if ! meshManager.statusMessage.isEmpty {
                     Text(meshManager.statusMessage)
                         .font(.caption)
-                        .foregroundColor(. gray)
-                        .padding(. horizontal)
-                        .padding(. bottom, 10)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal)
+                        .padding(.bottom, 10)
                 }
             }
             .navigationBarHidden(true)
@@ -142,8 +142,8 @@ struct ContentView: View {
         }
         .alert("Success", isPresented: $meshManager.showSuccess) {
             Button("OK", role: .cancel) { }
-        } message:  {
-            Text(meshManager. successMessage)
+        } message: {
+            Text(meshManager.successMessage)
         }
     }
 }
@@ -152,11 +152,11 @@ struct ContentView: View {
 class MeshManager: ObservableObject {
     @Published var isConnected = false
     @Published var isSharingInternet = false
-    @Published var peerCount: Int = 0
+    @Published var peerCount:  Int = 0
     @Published var proxyCount: Int = 0
     @Published var deviceID: String = ""
     @Published var statusMessage: String = ""
-    @Published var showError:  Bool = false
+    @Published var showError: Bool = false
     @Published var errorMessage: String = ""
     @Published var showSuccess: Bool = false
     @Published var successMessage: String = ""
@@ -169,12 +169,12 @@ class MeshManager: ObservableObject {
     }
     
     deinit {
-        statsTimer?.invalidate()
+        statsTimer?. invalidate()
     }
     
     private func setupMeshApp() {
         // Generate a unique device ID
-        deviceID = UIDevice.current. identifierForVendor?.uuidString ?? UUID().uuidString
+        deviceID = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
         let deviceName = UIDevice.current.name
         let ipAddress = getIPAddress() ?? "0.0.0.0"
         let macAddress = getMACAddress() ?? "00:00:00:00:00:00"
@@ -202,7 +202,7 @@ class MeshManager: ObservableObject {
                 statusMessage = "Connected to mesh network"
                 startUpdatingStats()
             } catch {
-                errorMessage = "Failed to connect: \(error.localizedDescription)"
+                errorMessage = "Failed to connect:  \(error.localizedDescription)"
                 showError = true
             }
         }
@@ -229,19 +229,20 @@ class MeshManager: ObservableObject {
     func requestInternetAccess() {
         guard let app = mobileApp else { return }
         
-        do {
-            let result = try app.requestInternetAccess()
+        var error: NSError?
+        let result = app.requestInternetAccess(&error)
+        if let error = error {
+            errorMessage = error.localizedDescription
+            showError = true
+        } else {
             successMessage = result
             showSuccess = true
             statusMessage = "Connected to internet proxy"
-        } catch {
-            errorMessage = error. localizedDescription
-            showError = true
         }
     }
     
     private func startUpdatingStats() {
-        statsTimer?.invalidate()
+        statsTimer?. invalidate()
         statsTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] timer in
             guard let self = self, let app = self.mobileApp, self.isConnected else {
                 timer.invalidate()
@@ -255,12 +256,12 @@ class MeshManager: ObservableObject {
     
     private func getIPAddress() -> String? {
         var address: String?
-        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+        var ifaddr: UnsafeMutablePointer<ifaddrs>? 
         
         if getifaddrs(&ifaddr) == 0 {
             var ptr = ifaddr
             while ptr != nil {
-                defer { ptr = ptr?.pointee. ifa_next }
+                defer { ptr = ptr?.pointee.ifa_next }
                 
                 guard let interface = ptr?.pointee,
                       let addr = interface.ifa_addr else {
