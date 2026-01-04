@@ -51,14 +51,24 @@ jobs:
 
       - name: Install gomobile
         run: |
+          # Download the mobile module first
+          go get golang.org/x/mobile@latest
+          go get golang.org/x/mobile/bind@latest
+          
+          # Install gomobile and gobind binaries
           go install golang.org/x/mobile/cmd/gomobile@latest
           go install golang.org/x/mobile/cmd/gobind@latest
           
+          # Add GOBIN to PATH
           export PATH="$GOBIN:$PATH"
           echo "$GOBIN" >> $GITHUB_PATH
           
+          # Initialize gomobile (downloads SDK bindings)
           gomobile init
-          gomobile version
+          
+          # Verify
+          which gomobile
+          which gobind
 
       - name: Set up Xcode
         run: |
