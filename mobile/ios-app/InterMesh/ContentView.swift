@@ -163,7 +163,6 @@ struct ContentView: View {
                                     }
                                 }
                             }
-                            }
                         }
                     }
                     .padding()
@@ -622,11 +621,11 @@ class MeshManager: ObservableObject {
         if let error = error {
             errorMessage = error.localizedDescription
             showError = true
-        } else if let result = result, (result.hasPrefix("Error") || result.hasPrefix("error")) {
+        } else if result.hasPrefix("Error") || result.hasPrefix("error") {
             errorMessage = result
             showError = true
         } else {
-            successMessage = result ?? "Connected to proxy"
+            successMessage = result
             showSuccess = true
             statusMessage = "Connected to internet proxy"
         }
