@@ -4,13 +4,15 @@ package intermesh
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/kiyotaka-koji-0/intermesh/pkg/mesh"
 )
 
 // MobileApp is the main mobile application interface
 type MobileApp struct {
-	app *mesh.MeshApp
+	app             *mesh.MeshApp
+	bleProxyHandler *BLEProxyHandler
 }
 
 // MobileConnectionListener implements ConnectionListener for mobile callbacks
@@ -55,9 +57,11 @@ func (mpdl *MobilePeerDiscoveryListener) OnPeerLost(peerID string) {
 
 // NewMobileApp creates a new mobile application instance
 func NewMobileApp(nodeID, nodeName, ip, mac string) *MobileApp {
-	return &MobileApp{
+	mobileApp := &MobileApp{
 		app: mesh.NewMeshApp(nodeID, nodeName, ip, mac),
 	}
+	mobileApp.bleProxyHandler = NewBLEProxyHandler(nodeID, mobileApp)
+	return mobileApp
 }
 
 // Start initializes and starts the mesh application
@@ -126,6 +130,44 @@ func (ma *MobileApp) RequestInternetAccess() (string, error) {
 // ReleaseInternetAccess releases internet access from a proxy
 func (ma *MobileApp) ReleaseInternetAccess(proxyID string) {
 	ma.app.ReleaseInternetAccess()
+}
+
+// RegisterBLEProxy registers a BLE peer as an available proxy
+func (ma *MobileApp) RegisterBLEProxy(peerID, peerIP, peerMAC string, hasInternet bool) {
+	if !hasInternet {
+		return
+	}
+
+	peer := &mesh.Peer{
+		NodeID:      peerID,
+		IP:          peerIP,
+		MAC:         peerMAC,
+		HasInternet: hasInternet,
+		LastSeen:    time.Now().Unix(),
+		RSSI:        -50, // Reasonable BLE RSSI value
+	}
+
+	ma.app.ProxyManager.RegisterProxy(peer)
+}
+
+// UnregisterBLEProxy unregisters a BLE peer as proxy
+func (ma *MobileApp) UnregisterBLEProxy(peerID string) {
+	ma.app.ProxyManager.UnregisterProxy(peerID)
+}
+
+// HandleBLEProxyMessage handles incoming BLE proxy messages
+func (ma *MobileApp) HandleBLEProxyMessage(senderID string, data []byte) error {
+	return ma.bleProxyHandler.HandleBLEProxyMessage(senderID, data)
+}
+
+// SetBLEMessageSender sets the callback for sending BLE messages
+func (ma *MobileApp) SetBLEMessageSender(sender func(peerID string, messageType string, data []byte) error) {
+	ma.bleProxyHandler.SetBLEMessageSender(sender)
+}
+
+// RequestInternetThroughBLE requests internet access through a BLE proxy
+func (ma *MobileApp) RequestInternetThroughBLE(proxyPeerID, url, method string, headers map[string]string, body string) (string, error) {
+	return ma.bleProxyHandler.SendProxyRequest(proxyPeerID, url, method, headers, []byte(body))
 }
 
 // GetNetworkStats returns current network statistics

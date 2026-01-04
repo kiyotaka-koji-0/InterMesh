@@ -213,7 +213,7 @@ struct ContentView: View {
                         
                         // Request Internet Button
                         Button(action: {
-                            meshManager.requestInternetAccess()
+                            requestInternetThroughBLEProxy()
                         }) {
                             HStack {
                                 Image(systemName: "globe")
@@ -358,20 +358,47 @@ struct ContentView: View {
     
     private func setupBLECallbacks() {
         bleManager.onPeerDiscovered = { peer in
-            meshManager.statusMessage = "Found BLE peer: \(peer.name) (\(peer.platform))"
+            meshManager.statusMessage = "Found BLE peer: \(peer.name) (\(peer.platform))\(peer.hasInternet ? " [Proxy]" : "")"
         }
         
         bleManager.onPeerConnected = { peer in
             meshManager.statusMessage = "Connected to BLE peer: \(peer.name) (\(peer.platform))"
+            
+            // Register as proxy if peer has internet
+            if peer.hasInternet, let app = self.mobileApp {
+                let bleIP = "169.254.1.\(abs(peer.id.hashValue) % 255)"
+                app.registerBLEProxy(peer.id, bleIP, peer.identifier.uuidString, peer.hasInternet)
+                print("Registered BLE proxy: \(peer.name)")
+            }
         }
         
         bleManager.onPeerDisconnected = { id in
             meshManager.statusMessage = "BLE peer disconnected: \(id)"
+            
+            // Unregister proxy
+            if let app = self.mobileApp {
+                app.unregisterBLEProxy(id)
+                print("Unregistered BLE proxy: \(id)")
+            }
         }
         
         bleManager.onMessageReceived = { from, data in
             if let message = String(data: data, encoding: .utf8) {
-                meshManager.statusMessage = "BLE message from \(from): \(message)"
+                // Check if this is a proxy message
+                if message.starts(with: "{") && message.contains("internet_proxy") {
+                    // Handle proxy message through mobile app
+                    if let app = self.mobileApp {
+                        do {
+                            try app.handleBLEProxyMessage(from, data)
+                            print("Handled BLE proxy message from \(from)")
+                        } catch {
+                            print("Failed to handle BLE proxy message: \(error)")
+                        }
+                    }
+                } else {
+                    // Regular message
+                    meshManager.statusMessage = "BLE message from \(from): \(message)"
+                }
             }
         }
         
@@ -695,6 +722,55 @@ class MeshManager: ObservableObject {
     private func getMACAddress() -> String? {
         // iOS doesn't allow direct MAC address access for privacy reasons
         return "00:00:00:00:00:00"
+    }
+    
+    private func requestInternetThroughBLEProxy() {
+        guard let app = mobileApp else {
+            meshManager.errorMessage = "Mobile app not initialized"
+            return
+        }
+        
+        // Find a BLE peer with internet
+        let proxyPeer = bleManager.connectedPeers.first { $0.hasInternet }
+        guard let proxy = proxyPeer else {
+            meshManager.errorMessage = "No BLE proxies available"
+            return
+        }
+        
+        meshManager.statusMessage = "Testing internet through \(proxy.name)..."
+        
+        // Set up BLE message sender if not already done
+        app.setBLEMessageSender { peerID, messageType, data in
+            DispatchQueue.main.async {
+                if let dataString = String(data: data, encoding: .utf8) {
+                    self.bleManager.sendMessage(dataString)
+                }
+            }
+            return nil
+        }
+        
+        // Test internet access by making a simple HTTP request through BLE proxy
+        DispatchQueue.global(qos: .background).async {
+            do {
+                let headers = ["User-Agent": "InterMesh iOS App"]
+                let requestId = app.requestInternetThroughBLE(
+                    proxy.id,
+                    "https://httpbin.org/get",
+                    "GET",
+                    headers,
+                    ""  // Empty body as string
+                )
+                
+                DispatchQueue.main.async {
+                    self.meshManager.statusMessage = "Internet request sent via BLE proxy (ID: \(requestId))"
+                }
+                
+            } catch {
+                DispatchQueue.main.async {
+                    self.meshManager.errorMessage = "Failed to access internet: \(error.localizedDescription)"
+                }
+            }
+        }
     }
 }
 

@@ -72,13 +72,15 @@ class BLEManager(private val context: Context) {
     var onError: ((String) -> Unit)? = null
     var onStateChanged: ((Boolean) -> Unit)? = null
     var onBluetoothRequired: (() -> Unit)? = null  // Callback to request Bluetooth enable
+    var getInternetStatus: (() -> Boolean)? = null  // Callback to get internet status
     
     data class BLEPeer(
         val id: String,
         val name: String,
         val address: String,
         val platform: String, // "android" or "ios"
-        val rssi: Int = 0
+        val rssi: Int = 0,
+        val hasInternet: Boolean = false
     )
     
     /**
@@ -259,7 +261,8 @@ class BLEManager(private val context: Context) {
         ) {
             when (characteristic.uuid) {
                 DEVICE_INFO_CHAR_UUID -> {
-                    val deviceInfo = "$localDeviceId|$localDeviceName|android"
+                    val hasInternet = getInternetStatus?.invoke() ?: false
+                    val deviceInfo = "$localDeviceId|$localDeviceName|android|$hasInternet"
                     val data = deviceInfo.toByteArray(StandardCharsets.UTF_8)
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, 
                         data.copyOfRange(offset, minOf(offset + 20, data.size)))
@@ -565,14 +568,16 @@ class BLEManager(private val context: Context) {
                     val info = String(data, StandardCharsets.UTF_8)
                     val parts = info.split("|")
                     if (parts.size >= 3) {
+                        val hasInternet = if (parts.size >= 4) parts[3].toBoolean() else false
                         val peer = BLEPeer(
                             id = parts[0],
                             name = parts[1],
                             address = gatt.device.address,
-                            platform = parts[2]
+                            platform = parts[2],
+                            hasInternet = hasInternet
                         )
                         discoveredDevices[gatt.device.address] = peer
-                        Log.i(TAG, "Peer info: ${peer.name} (${peer.platform})")
+                        Log.i(TAG, "Peer info: ${peer.name} (${peer.platform}) - Internet: $hasInternet")
                         handler.post { onPeerConnected?.invoke(peer) }
                     }
                 }

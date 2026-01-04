@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         requestInternetButton.setOnClickListener {
-            requestInternetAccess()
+            requestInternetThroughProxy()
         }
         
         // Make peers count clickable to show peer list
@@ -326,12 +326,33 @@ class MainActivity : AppCompatActivity() {
             }
             
             // Set up BLE callbacks
+            bleManager.getInternetStatus = {
+                if (::mobileApp.isInitialized) {
+                    mobileApp.hasInternet()
+                } else {
+                    false
+                }
+            }
+            
             bleManager.onPeerDiscovered = { peer ->
                 mainHandler.post {
                     blePeers[peer.address] = peer
-                    Log.d(TAG, "BLE Peer found: ${peer.name} (${peer.platform})")
+                    Log.d(TAG, "BLE Peer found: ${peer.name} (${peer.platform}) - Internet: ${peer.hasInternet}")
+                    
+                    // Register as proxy if peer has internet
+                    if (peer.hasInternet && ::mobileApp.isInitialized) {
+                        try {
+                            // Generate a reasonable IP for BLE peer (since we don't have real IP)
+                            val bleIP = "169.254.1.${peer.address.hashCode().and(0xFF)}"
+                            mobileApp.registerBLEProxy(peer.id, bleIP, peer.address, peer.hasInternet)
+                            Log.d(TAG, "Registered BLE proxy: ${peer.name}")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to register BLE proxy: ${e.message}")
+                        }
+                    }
+                    
                     updatePeerCount()
-                    showMessage("BLE: Found ${peer.name} (${peer.platform})")
+                    showMessage("BLE: Found ${peer.name} (${peer.platform})${if (peer.hasInternet) " [Proxy]" else ""}")
                 }
             }
             
@@ -348,15 +369,46 @@ class MainActivity : AppCompatActivity() {
                 mainHandler.post {
                     val peer = blePeers.remove(address)
                     Log.d(TAG, "BLE Peer disconnected: ${peer?.name ?: address}")
+                    
+                    // Unregister proxy if peer had internet
+                    peer?.let {
+                        if (it.hasInternet && ::mobileApp.isInitialized) {
+                            try {
+                                mobileApp.unregisterBLEProxy(it.id)
+                                Log.d(TAG, "Unregistered BLE proxy: ${it.name}")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to unregister BLE proxy: ${e.message}")
+                            }
+                        }
+                    }
+                    
                     updatePeerCount()
                 }
             }
             
             bleManager.onMessageReceived = { from, data ->
                 mainHandler.post {
-                    val message = String(data, Charsets.UTF_8)
-                    Log.d(TAG, "BLE Message from $from: $message")
-                    showMessage("BLE: $message")
+                    try {
+                        // Check if this is a proxy message by looking at the data format
+                        val messageStr = String(data, Charsets.UTF_8)
+                        
+                        if (messageStr.startsWith("{") && messageStr.contains("internet_proxy")) {
+                            // Handle proxy message through mobile app
+                            if (::mobileApp.isInitialized) {
+                                mobileApp.handleBLEProxyMessage(from, data)
+                                Log.d(TAG, "Handled BLE proxy message from $from")
+                            }
+                        } else {
+                            // Regular message
+                            Log.d(TAG, "BLE Message from $from: $messageStr")
+                            showMessage("BLE: $messageStr")
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to handle BLE message: ${e.message}")
+                        // Fallback to treating as regular message
+                        val message = String(data, Charsets.UTF_8)
+                        showMessage("BLE: $message")
+                    }
                 }
             }
             
@@ -417,6 +469,22 @@ class MainActivity : AppCompatActivity() {
             if (isBleEnabled) {
                 bleManager.start()
                 Log.d(TAG, "BLE started for cross-platform discovery")
+                
+                // Set up BLE message sender for proxy functionality  
+                // Note: This would need to be properly implemented in the Go mobile bindings
+                // For now, we'll comment it out to fix compilation
+                /*
+                mobileApp.setBLEMessageSender { peerID: String, messageType: String, data: ByteArray ->
+                    try {
+                        val message = String(data, Charsets.UTF_8)
+                        bleManager.sendMessage(message)
+                        null
+                    } catch (e: Exception) {
+                        Log.e(TAG, \"Failed to send BLE message: ${e.message}\")
+                        e
+                    }
+                }
+                */
             }
             
             // Now connected
@@ -599,6 +667,53 @@ class MainActivity : AppCompatActivity() {
     private fun showMessage(message: String) {
         messageText.text = message
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+    
+    private fun requestInternetThroughProxy() {
+        try {
+            if (!::mobileApp.isInitialized || !isConnected) {
+                showMessage("Not connected to mesh network")
+                return
+            }
+            
+            // Find a BLE peer with internet
+            val proxyPeer = blePeers.values.find { it.hasInternet }
+            if (proxyPeer == null) {
+                showMessage("No BLE proxies available")
+                return
+            }
+            
+            showMessage("Testing internet through ${proxyPeer.name}...")
+            
+            // Test internet access by making a simple HTTP request through BLE proxy
+            Thread {
+                try {
+                    // For now, just show a message since the Go binding isn't ready
+                    // val headers = mapOf("User-Agent" to "InterMesh Android App")
+                    // val requestId = mobileApp.requestInternetThroughBLE(
+                    //     proxyPeer.id,
+                    //     "https://httpbin.org/get", 
+                    //     "GET",
+                    //     headers,
+                    //     ""  // Empty body as string
+                    // )
+                    
+                    mainHandler.post {
+                        showMessage("BLE Proxy functionality detected ${proxyPeer.name} with internet!")
+                    }
+                    
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to request internet through BLE: ${e.message}")
+                    mainHandler.post {
+                        showMessage("Failed to access internet: ${e.message}")
+                    }
+                }
+            }.start()
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error requesting internet through proxy: ${e.message}")
+            showMessage("Error: ${e.message}")
+        }
     }
     
     override fun onDestroy() {

@@ -19,6 +19,7 @@ struct BLEPeer: Identifiable, Equatable {
     var platform: String // "android", "ios", or "unknown"
     var rssi: Int
     var isConnected: Bool = false
+    var hasInternet: Bool = false
     
     static func == (lhs: BLEPeer, rhs: BLEPeer) -> Bool {
         return lhs.id == rhs.id
@@ -426,27 +427,30 @@ extension BLEManager: CBPeripheralDelegate {
         guard error == nil, let data = characteristic.value else { return }
         
         if characteristic.uuid == BLEManager.deviceInfoCharUUID {
-            // Parse device info: "deviceId|deviceName|platform"
+            // Parse device info: "deviceId|deviceName|platform|hasInternet"
             if let info = String(data: data, encoding: .utf8) {
                 let parts = info.split(separator: "|")
                 if parts.count >= 3 {
                     let platform = String(parts[2])
+                    let hasInternet = parts.count >= 4 ? String(parts[3]) == "true" : false
                     
                     // Update peer with platform info
                     if let index = discoveredPeers.firstIndex(where: { $0.identifier == peripheral.identifier }) {
                         DispatchQueue.main.async {
                             self.discoveredPeers[index].platform = platform
+                            self.discoveredPeers[index].hasInternet = hasInternet
                             
                             // Update connected peer too
                             if let connectedIndex = self.connectedPeers.firstIndex(where: { $0.identifier == peripheral.identifier }) {
                                 self.connectedPeers[connectedIndex].platform = platform
+                                self.connectedPeers[connectedIndex].hasInternet = hasInternet
                             }
                             
                             self.onPeerConnected?(self.discoveredPeers[index])
                         }
                     }
                     
-                    print("BLE: Peer info - \(parts[1]) (\(platform))")
+                    print("BLE: Peer info - \(parts[1]) (\(platform)) - Internet: \(hasInternet)")
                 }
             }
         } else if characteristic.uuid == BLEManager.messageCharUUID ||
@@ -511,7 +515,8 @@ extension BLEManager: CBPeripheralManagerDelegate {
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         if request.characteristic.uuid == BLEManager.deviceInfoCharUUID {
-            let deviceInfo = "\(localDeviceId)|\(localDeviceName)|ios"
+            let hasInternet = mobileApp?.hasInternet() ?? false
+            let deviceInfo = "\(localDeviceId)|\(localDeviceName)|ios|\(hasInternet)"
             if let data = deviceInfo.data(using: .utf8) {
                 request.value = data
                 peripheral.respond(to: request, withResult: .success)
