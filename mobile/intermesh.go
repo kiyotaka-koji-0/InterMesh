@@ -178,7 +178,7 @@ func (ma *MobileApp) SimpleHTTPRequestThroughBLE(url string) (string, error) {
 	if len(proxies) == 0 {
 		return "", fmt.Errorf("no BLE proxies available")
 	}
-	
+
 	proxyPeer := proxies[0]
 	return ma.bleProxyHandler.SendProxyRequest(proxyPeer.NodeID, url, "GET", nil, nil)
 }

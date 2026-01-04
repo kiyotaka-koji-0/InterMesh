@@ -401,4 +401,5 @@ func (h *BLEProxyHandler) ParseProxyResponseBody(responseJSON string) string {
 	if err != nil {
 		return fmt.Sprintf("Error: %v", err)
 	}
-	return body}
+	return body
+}
