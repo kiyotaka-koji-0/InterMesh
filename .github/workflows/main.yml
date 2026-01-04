@@ -41,7 +41,7 @@ jobs:
 
       - name: Build iOS Framework
         run: |
-          gomobile bind -target=ios -o mobile/ios/InterMesh.framework ./mobile
+          gomobile bind -target=ios -o mobile/ios/InterMesh.xcframework ./mobile
 
       - name: Set up Xcode
         run: |
@@ -60,3 +60,4 @@ jobs:
         with:
           name: InterMesh.ipa
           path: ./build/InterMesh.ipa
+
