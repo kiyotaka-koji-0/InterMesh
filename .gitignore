@@ -1,0 +1,45 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.so.*
+*.dylib
+*.o
+*.a
+*.out
+
+# Go build cache
+.cache/
+.go/
+bin/
+dist/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+.gradle/
+
+# Test artifacts
+*.prof
+*.test
+coverage.txt
+coverage.html
+
+# Gomobile artifacts
+*.xcframework
+*.aar
+*.jar
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
