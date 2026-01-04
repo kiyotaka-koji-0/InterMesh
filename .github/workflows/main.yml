@@ -10,31 +10,42 @@ on:
 
 jobs:   
   build-ios: 
-    name:  Build iOS App
+    name:   Build iOS App
     runs-on:  macos-latest
 
     steps:    
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses:  actions/checkout@v3
 
       - name:  Set up Go
         uses: actions/setup-go@v4
-        with:
-          go-version: 1.21
+        with: 
+          go-version: '1.21'
           check-latest: true
 
-      - name: Install gomobile
-        run:  |
-          go install golang.org/x/mobile/cmd/gomobile@latest
-          gomobile init
-
-      - name: Verify Go Version
+      - name:  Verify Go Version
         run: go version
+
+      - name: Install gomobile and gobind
+        run: |
+          # Install gomobile
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+          
+          # Initialize gomobile
+          gomobile init
+          
+          # Verify installation
+          which gomobile
+          which gobind
+          gomobile version
 
       - name: Cache Go Modules
         uses: actions/cache@v3
         with:      
-          path:  ~/go/pkg/mod
+          path:  |
+            ~/go/pkg/mod
+            ~/go/pkg/gomobile
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
@@ -44,14 +55,17 @@ jobs:
         run:  |
           go mod tidy
           go mod download
+          go mod verify
 
       - name: Build iOS Framework
         run: |
           mkdir -p mobile/output
           cd mobile
-          gomobile bind -target=ios -o output/Intermesh.xcframework . 
+          
+          # Add verbose output
+          gomobile bind -v -target=ios -o output/Intermesh.xcframework . 
 
-      - name:  Verify Framework Location
+      - name: Verify Framework Location
         run: |
           echo "Checking framework location:"
           ls -la mobile/output/
@@ -59,8 +73,9 @@ jobs:
           ls -la mobile/output/Intermesh.xcframework/
 
       - name: Set up Xcode
-        run:  |
+        run: |
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
 
       - name: Build iOS App
         working-directory: mobile/ios-app
@@ -79,17 +94,22 @@ jobs:
           # Find the . app bundle
           APP_PATH=$(find ./build/DerivedData/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
           
-          echo "Found app at:  $APP_PATH"
+          echo "Found app at: $APP_PATH"
+          
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: No .app bundle found!"
+            exit 1
+          fi
           
           # Create Payload directory
           mkdir -p ./build/Payload
           
-          # Copy . app to Payload
+          # Copy .app to Payload
           cp -r "$APP_PATH" ./build/Payload/
           
           # Create IPA (it's just a zip file)
           cd ./build
-          zip -r InterMesh. ipa Payload
+          zip -r InterMesh.ipa Payload
           
           echo "IPA created successfully!"
           ls -lh InterMesh.ipa
