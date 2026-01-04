@@ -62,8 +62,8 @@ jobs:
       - name: Create IPA
         working-directory:  mobile/ios-app
         run: |
-          # Find the . app bundle
-          APP_PATH=$(find ./build/DerivedData/Build/Products/Release-iphoneos -name "*. app" | head -n 1)
+          # Find the .app bundle
+          APP_PATH=$(find ./build/DerivedData/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
           
           # Create Payload directory
           mkdir -p ./build/Payload
