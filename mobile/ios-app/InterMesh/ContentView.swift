@@ -618,20 +618,11 @@ class MeshManager: ObservableObject {
         
         var error: NSError?
         if let result = app.requestInternetAccess(&error) {
-            if let error = error {
-                errorMessage = error.localizedDescription
-                showError = true
-            } else {
-                successMessage = result
-                showSuccess = true
-                statusMessage = "Connected to internet proxy"
-            }
+            successMessage = result
+            showSuccess = true
+            statusMessage = "Connected to internet proxy"
         } else {
-            if let error = error {
-                errorMessage = error.localizedDescription
-            } else {
-                errorMessage = "Failed to connect to proxy"
-            }
+            errorMessage = error?.localizedDescription ?? "Failed to connect to proxy"
             showError = true
         }
     }
