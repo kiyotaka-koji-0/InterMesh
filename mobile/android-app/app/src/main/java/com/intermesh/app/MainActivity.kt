@@ -387,26 +387,58 @@ class MainActivity : AppCompatActivity() {
             }
             
             bleManager.onMessageReceived = { from, data ->
-                mainHandler.post {
-                    try {
-                        // Check if this is a proxy message by looking at the data format
-                        val messageStr = String(data, Charsets.UTF_8)
-                        
-                        if (messageStr.startsWith("{") && messageStr.contains("internet_proxy")) {
-                            // Handle proxy message through mobile app
-                            if (::mobileApp.isInitialized) {
-                                mobileApp.handleBLEProxyMessage(from, data)
-                                Log.d(TAG, "Handled BLE proxy message from $from")
+                try {
+                    // Check if this is a proxy message by looking at the data format
+                    val messageStr = String(data, Charsets.UTF_8)
+                    
+                    // Check if this is a proxy request (from device without internet)
+                    if (messageStr.contains("\"type\":\"request\"") && messageStr.contains("\"url\"")) {
+                        // This device has internet - execute the proxy request
+                        if (::mobileApp.isInitialized && mobileApp.hasInternet()) {
+                            Thread {
+                                try {
+                                    // Execute the HTTP request
+                                    val responseJSON = mobileApp.executeProxyRequest(messageStr)
+                                    
+                                    // Send response back via BLE
+                                    responseJSON?.let { response ->
+                                        bleManager.sendMessage(from, response.toByteArray(Charsets.UTF_8))
+                                        Log.d(TAG, "Sent proxy response to $from")
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Failed to execute proxy request: ${e.message}")
+                                }
+                            }.start()
+                        }
+                    }
+                    // Check if this is a proxy response (from device with internet)
+                    else if (messageStr.contains("\"type\":\"response\"") || messageStr.contains("\"status_code\"")) {
+                        // Parse the response and update UI
+                        if (::mobileApp.isInitialized) {
+                            val body = mobileApp.parseProxyResponseBody(messageStr)
+                            mainHandler.post {
+                                showMessage("Internet response: ${body.take(200)}")
                             }
-                        } else {
-                            // Regular message
+                        }
+                    }
+                    // Handle via Go proxy message handler for other cases
+                    else if (messageStr.startsWith("{")) {
+                        if (::mobileApp.isInitialized) {
+                            mobileApp.handleBLEProxyMessage(from, data)
+                            Log.d(TAG, "Handled BLE proxy message from $from")
+                        }
+                    } else {
+                        // Regular message
+                        mainHandler.post {
                             Log.d(TAG, "BLE Message from $from: $messageStr")
                             showMessage("BLE: $messageStr")
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to handle BLE message: ${e.message}")
-                        // Fallback to treating as regular message
-                        val message = String(data, Charsets.UTF_8)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to handle BLE message: ${e.message}")
+                    // Fallback to treating as regular message
+                    val message = String(data, Charsets.UTF_8)
+                    mainHandler.post {
                         showMessage("BLE: $message")
                     }
                 }
@@ -683,29 +715,37 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             
-            showMessage("Testing internet through ${proxyPeer.name}...")
+            showMessage("Requesting internet through ${proxyPeer.name}...")
             
-            // Test internet access by making a simple HTTP request through BLE proxy
+            // Create and send a proxy request via BLE
             Thread {
                 try {
-                    // For now, just show a message since the Go binding isn't ready
-                    // val headers = mapOf("User-Agent" to "InterMesh Android App")
-                    // val requestId = mobileApp.requestInternetThroughBLE(
-                    //     proxyPeer.id,
-                    //     "https://httpbin.org/get", 
-                    //     "GET",
-                    //     headers,
-                    //     ""  // Empty body as string
-                    // )
+                    // Create a proxy request JSON
+                    val testURL = "https://httpbin.org/ip"
+                    val requestJSON = mobileApp.createProxyRequest(testURL, "GET")
+                    
+                    if (requestJSON == null || requestJSON.isEmpty()) {
+                        mainHandler.post {
+                            showMessage("Failed to create proxy request")
+                        }
+                        return@Thread
+                    }
+                    
+                    // Send the request via BLE to the proxy peer
+                    val sent = bleManager.sendMessage(proxyPeer.address, requestJSON.toByteArray(Charsets.UTF_8))
                     
                     mainHandler.post {
-                        showMessage("BLE Proxy functionality detected ${proxyPeer.name} with internet!")
+                        if (sent) {
+                            showMessage("Request sent to ${proxyPeer.name}, waiting for response...")
+                        } else {
+                            showMessage("Failed to send request via BLE")
+                        }
                     }
                     
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to request internet through BLE: ${e.message}")
                     mainHandler.post {
-                        showMessage("Failed to access internet: ${e.message}")
+                        showMessage("Failed to create request: ${e.message}")
                     }
                 }
             }.start()

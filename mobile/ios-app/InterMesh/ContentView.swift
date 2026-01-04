@@ -213,7 +213,7 @@ struct ContentView: View {
                         
                         // Request Internet Button
                         Button(action: {
-                            requestInternetThroughBLEProxy()
+                            requestInternetThroughBLEProxy(meshManager: meshManager, bleManager: bleManager)
                         }) {
                             HStack {
                                 Image(systemName: "globe")
@@ -372,7 +372,7 @@ struct ContentView: View {
             // Register as proxy if peer has internet
             if peer.hasInternet, let app = meshManager.mobileApp {
                 let bleIP = "169.254.1.\(abs(peer.id.hashValue) % 255)"
-                app.registerBLEProxy(peer.id, bleIP, peer.identifier.uuidString, peer.hasInternet)
+                app.registerBLEProxy(peer.id, peerIP: bleIP, peerMAC: peer.identifier.uuidString, hasInternet: peer.hasInternet)
                 print("Registered BLE proxy: \(peer.name)")
             }
         }
@@ -389,12 +389,42 @@ struct ContentView: View {
         
         bleManager.onMessageReceived = { from, data in
             if let message = String(data: data, encoding: .utf8) {
-                // Check if this is a proxy message
-                if message.starts(with: "{") && message.contains("internet_proxy") {
-                    // Handle proxy message through mobile app
+                // Check if this is a proxy request (from device without internet)
+                if message.contains("\"type\":\"request\"") && message.contains("\"url\"") {
+                    // This device has internet - execute the proxy request
+                    if let app = meshManager.mobileApp, app.hasInternet() {
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            do {
+                                // Execute the HTTP request
+                                let responseJSON = try app.executeProxyRequest(message)
+                                
+                                // Send response back via BLE
+                                if let responseData = responseJSON.data(using: .utf8),
+                                   let peer = bleManager.connectedPeers.first(where: { $0.id == from }) {
+                                    bleManager.sendData(responseData, to: peer.identifier)
+                                    print("Sent proxy response to \(from)")
+                                }
+                            } catch {
+                                print("Failed to execute proxy request: \(error)")
+                            }
+                        }
+                    }
+                }
+                // Check if this is a proxy response (from device with internet)
+                else if message.contains("\"type\":\"response\"") || message.contains("\"status_code\"") {
+                    // Parse the response and update UI
+                    if let app = meshManager.mobileApp {
+                        let body = app.parseProxyResponseBody(message)
+                        DispatchQueue.main.async {
+                            meshManager.statusMessage = "Internet response: \(body.prefix(200))"
+                        }
+                    }
+                }
+                // Handle via Go proxy message handler for other cases
+                else if message.starts(with: "{") {
                     if let app = meshManager.mobileApp {
                         do {
-                            try app.handleBLEProxyMessage(from, data)
+                            try app.handleBLEProxyMessage(from, data: data)
                             print("Handled BLE proxy message from \(from)")
                         } catch {
                             print("Failed to handle BLE proxy message: \(error)")
@@ -729,7 +759,7 @@ class MeshManager: ObservableObject {
         return "00:00:00:00:00:00"
     }
     
-    private func requestInternetThroughBLEProxy() {
+    private func requestInternetThroughBLEProxy(meshManager: MeshManager, bleManager: BLEManager) {
         guard let app = meshManager.mobileApp else {
             meshManager.errorMessage = "Mobile app not initialized"
             return
@@ -742,12 +772,41 @@ class MeshManager: ObservableObject {
             return
         }
         
-        meshManager.statusMessage = "Testing internet through \(proxy.name)..."
+        meshManager.statusMessage = "Requesting internet through \(proxy.name)..."
         
-        // For now, just show a success message since the full proxy implementation
-        // requires the Go mobile bindings to be properly exported
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            meshManager.statusMessage = "BLE Proxy functionality detected \(proxy.name) with internet!"
+        // Create and send a proxy request via BLE
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                // Create a proxy request JSON
+                let testURL = "https://httpbin.org/ip"
+                var error: NSError?
+                let requestJSON = app.createProxyRequest(testURL, method: "GET", error: &error)
+                
+                if let error = error {
+                    DispatchQueue.main.async {
+                        meshManager.errorMessage = "Failed to create proxy request: \(error.localizedDescription)"
+                    }
+                    return
+                }
+                
+                guard let requestData = requestJSON?.data(using: .utf8) else {
+                    DispatchQueue.main.async {
+                        meshManager.errorMessage = "Failed to encode proxy request"
+                    }
+                    return
+                }
+                
+                // Send the request via BLE to the proxy peer
+                let sent = bleManager.sendData(requestData, to: proxy.identifier)
+                
+                DispatchQueue.main.async {
+                    if sent {
+                        meshManager.statusMessage = "Request sent to \(proxy.name), waiting for response..."
+                    } else {
+                        meshManager.errorMessage = "Failed to send request via BLE"
+                    }
+                }
+            }
         }
     }
 }

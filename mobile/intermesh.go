@@ -170,6 +170,39 @@ func (ma *MobileApp) RequestInternetThroughBLE(proxyPeerID, url, method string, 
 	return ma.bleProxyHandler.SendProxyRequest(proxyPeerID, url, method, headers, []byte(body))
 }
 
+// SimpleHTTPRequestThroughBLE performs a simple GET request through BLE proxy
+// This is a simplified version for mobile that doesn't require map parameters
+func (ma *MobileApp) SimpleHTTPRequestThroughBLE(url string) (string, error) {
+	// Find any available BLE proxy from ProxyManager (includes BLE-registered proxies)
+	proxies := ma.app.ProxyManager.GetAvailableProxies()
+	if len(proxies) == 0 {
+		return "", fmt.Errorf("no BLE proxies available")
+	}
+	
+	proxyPeer := proxies[0]
+	return ma.bleProxyHandler.SendProxyRequest(proxyPeer.NodeID, url, "GET", nil, nil)
+}
+
+// CreateProxyRequest creates a JSON proxy request for sending via BLE
+// Returns a JSON string that should be sent to the proxy device via BLE
+func (ma *MobileApp) CreateProxyRequest(url, method string) (string, error) {
+	return ma.bleProxyHandler.CreateProxyRequest(url, method)
+}
+
+// ExecuteProxyRequest executes an HTTP proxy request (for devices with internet)
+// Takes a JSON request string and returns a JSON response string
+func (ma *MobileApp) ExecuteProxyRequest(requestJSON string) (string, error) {
+	if !ma.HasInternet() {
+		return "", fmt.Errorf("this device does not have internet access")
+	}
+	return ma.bleProxyHandler.ExecuteProxyRequestSync(requestJSON)
+}
+
+// ParseProxyResponseBody extracts just the body from a proxy response JSON
+func (ma *MobileApp) ParseProxyResponseBody(responseJSON string) string {
+	return ma.bleProxyHandler.ParseProxyResponseBody(responseJSON)
+}
+
 // GetNetworkStats returns current network statistics
 func (ma *MobileApp) GetNetworkStats() *MobileNetworkStats {
 	stats := ma.app.GetNetworkStats()

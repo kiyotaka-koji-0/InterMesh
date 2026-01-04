@@ -75,6 +75,7 @@ class BLEManager: NSObject, ObservableObject {
     var onPeerDisconnected: ((String) -> Void)?
     var onMessageReceived: ((String, Data) -> Void)?
     var onError: ((String) -> Void)?
+    var getInternetStatus: (() -> Bool)?  // Callback to get internet status
     
     // MARK: - Initialization
     
@@ -512,9 +513,6 @@ extension BLEManager: CBPeripheralManagerDelegate {
         print("BLE: Central unsubscribed from \(characteristic.uuid)")
         connectedCentrals.removeAll { $0.identifier == central.identifier }
     }
-    
-    // Reference to get internet status
-    var getInternetStatus: (() -> Bool)? = nil
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         if request.characteristic.uuid == BLEManager.deviceInfoCharUUID {
