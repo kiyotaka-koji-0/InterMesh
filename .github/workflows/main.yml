@@ -1,12 +1,12 @@
 name: Build iOS Framework and App
 
 on:
-  push:
-    branches:
+  push: 
+    branches: 
       - main
       - 'copilot/**'
   pull_request:
-    branches:
+    branches: 
       - main
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
       actions: write
 
     steps:
-      - name: Checkout Repository
+      - name:  Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Go
@@ -30,9 +30,9 @@ jobs:
       - name: Cache Go Modules
         uses: actions/cache@v4
         with:
-          path: ~/go/pkg/mod
+          path:  ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
+          restore-keys:  |
             ${{ runner.os }}-go-
 
       - name: Install gomobile
@@ -40,7 +40,7 @@ jobs:
           go install golang.org/x/mobile/cmd/gomobile@latest
           gomobile init
 
-      - name: Verify Go Dependencies
+      - name:  Verify Go Dependencies
         run: |
           go mod download
           go mod verify
@@ -49,12 +49,12 @@ jobs:
         run: mkdir -p mobile/output
 
       - name: Build iOS Framework
-        run: |
+        run:  |
           gomobile bind -target=ios -o mobile/output/Intermesh.xcframework ./mobile
 
       - name: Upload iOS Framework
         uses: actions/upload-artifact@v4
-        with:
+        with: 
           name: intermesh-ios-framework
           path: mobile/output/Intermesh.xcframework
 
@@ -62,7 +62,7 @@ jobs:
     name: Build iOS App
     runs-on: macos-latest
     needs: build-ios-framework
-    permissions:
+    permissions: 
       contents: read
       actions: write
 
@@ -74,11 +74,26 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: intermesh-ios-framework
-          path: mobile/output/
+          path:  mobile/output/
+
+      - name:  Verify Framework Structure
+        run: |
+          echo "Checking downloaded framework structure..."
+          ls -la mobile/output/
+          echo "Detailed structure:"
+          find mobile/output -type d
+          # Check if framework exists at the expected location
+          if [ ! -d "mobile/output/Intermesh. xcframework" ]; then
+            echo "Error: Intermesh. xcframework not found at expected location"
+            echo "All files in mobile/output:"
+            find mobile/output
+            exit 1
+          fi
+          echo "Framework structure verified successfully"
 
       - name: Set up Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode. app/Contents/Developer
           xcodebuild -version
 
       - name: Build iOS App
@@ -107,4 +122,3 @@ jobs:
         with:
           name: InterMesh-iOS-App
           path: mobile/ios-app/build/InterMesh.ipa
-
