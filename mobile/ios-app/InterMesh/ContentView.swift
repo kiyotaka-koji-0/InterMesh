@@ -21,7 +21,7 @@ struct ContentView: View {
                     .padding(.top, 20)
                 
                 // Device Info Card
-                VStack(alignment: . leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 10) {
                     Text("Device Information")
                         .font(.headline)
                     
@@ -42,13 +42,13 @@ struct ContentView: View {
                             .fontWeight(.medium)
                     }
                 }
-                . padding()
-                .background(Color(. systemGray6))
+                .padding()
+                .background(Color(.systemGray6))
                 .cornerRadius(12)
                 .padding(.horizontal)
                 
                 // Statistics Card
-                VStack(alignment:  .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 10) {
                     Text("Network Statistics")
                         .font(.headline)
                     
@@ -92,7 +92,7 @@ struct ContentView: View {
                 Spacer()
                 
                 // Action Buttons
-                VStack(spacing:  15) {
+                VStack(spacing: 15) {
                     // Connect/Disconnect Button
                     Button(action: {
                         meshManager.toggleConnection()
@@ -101,7 +101,7 @@ struct ContentView: View {
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(meshManager.isConnected ? Color. red : Color.blue)
+                            .background(meshManager.isConnected ? Color.red : Color.blue)
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
@@ -118,14 +118,14 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
-                    . disabled(! meshManager.isConnected)
-                    . opacity(meshManager.isConnected ?  1.0 : 0.5)
+                    .disabled(!meshManager.isConnected)
+                    .opacity(meshManager.isConnected ? 1.0 : 0.5)
                 }
                 .padding(.horizontal)
-                . padding(.bottom, 30)
+                .padding(.bottom, 30)
                 
                 // Status Message
-                if ! meshManager.statusMessage.isEmpty {
+                if !meshManager.statusMessage.isEmpty {
                     Text(meshManager.statusMessage)
                         .font(.caption)
                         .foregroundColor(.gray)
@@ -152,7 +152,7 @@ struct ContentView: View {
 class MeshManager: ObservableObject {
     @Published var isConnected = false
     @Published var isSharingInternet = false
-    @Published var peerCount:  Int = 0
+    @Published var peerCount: Int = 0
     @Published var proxyCount: Int = 0
     @Published var deviceID: String = ""
     @Published var statusMessage: String = ""
@@ -169,7 +169,7 @@ class MeshManager: ObservableObject {
     }
     
     deinit {
-        statsTimer?. invalidate()
+        statsTimer?.invalidate()
     }
     
     private func setupMeshApp() {
@@ -202,7 +202,7 @@ class MeshManager: ObservableObject {
                 statusMessage = "Connected to mesh network"
                 startUpdatingStats()
             } catch {
-                errorMessage = "Failed to connect:  \(error.localizedDescription)"
+                errorMessage = "Failed to connect: \(error.localizedDescription)"
                 showError = true
             }
         }
@@ -242,7 +242,7 @@ class MeshManager: ObservableObject {
     }
     
     private func startUpdatingStats() {
-        statsTimer?. invalidate()
+        statsTimer?.invalidate()
         statsTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] timer in
             guard let self = self, let app = self.mobileApp, self.isConnected else {
                 timer.invalidate()
@@ -256,7 +256,7 @@ class MeshManager: ObservableObject {
     
     private func getIPAddress() -> String? {
         var address: String?
-        var ifaddr: UnsafeMutablePointer<ifaddrs>? 
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
         
         if getifaddrs(&ifaddr) == 0 {
             var ptr = ifaddr
