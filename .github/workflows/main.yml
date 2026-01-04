@@ -1,6 +1,6 @@
 name: Build iOS Framework and App
 
-on:
+on: 
   push: 
     branches: 
       - main
@@ -9,12 +9,12 @@ on:
     branches: 
       - main
 
-jobs:
-  build-ios-framework:
+jobs: 
+  build-ios-framework: 
     name: Build iOS Framework
     runs-on: macos-latest
     permissions:
-      contents: read
+      contents:  read
       actions: write
 
     steps:
@@ -36,11 +36,11 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Install gomobile
-        run: |
+        run:  |
           go install golang.org/x/mobile/cmd/gomobile@latest
           gomobile init
 
-      - name:  Verify Go Dependencies
+      - name: Verify Go Dependencies
         run: |
           go mod download
           go mod verify
@@ -58,7 +58,7 @@ jobs:
           name: intermesh-ios-framework
           path: mobile/output/Intermesh.xcframework
 
-  build-ios-app:
+  build-ios-app: 
     name: Build iOS App
     runs-on: macos-latest
     needs: build-ios-framework
@@ -72,21 +72,19 @@ jobs:
 
       - name: Download iOS Framework
         uses: actions/download-artifact@v4
-        with:
+        with: 
           name: intermesh-ios-framework
-          path:  mobile/output/
+          path: mobile/output/Intermesh.xcframework
 
-      - name:  Verify Framework Structure
+      - name: Verify Framework Structure
         run: |
           echo "Checking downloaded framework structure..."
           ls -la mobile/output/
-          echo "Detailed structure:"
-          find mobile/output -type d
-          # Check if framework exists at the expected location
-          if [ ! -d "mobile/output/Intermesh. xcframework" ]; then
-            echo "Error: Intermesh. xcframework not found at expected location"
-            echo "All files in mobile/output:"
-            find mobile/output
+          echo "XCFramework contents:"
+          ls -la mobile/output/Intermesh.xcframework/
+          # Verify the framework is properly structured
+          if [ ! -d "mobile/output/Intermesh.xcframework/ios-arm64" ]; then
+            echo "Error: XCFramework structure is incorrect"
             exit 1
           fi
           echo "Framework structure verified successfully"
@@ -112,12 +110,12 @@ jobs:
         working-directory: mobile/ios-app
         run: |
           xcodebuild -exportArchive \
-            -archivePath ./build/InterMesh.xcarchive \
+            -archivePath ./build/InterMesh. xcarchive \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath ./build \
             -allowProvisioningUpdates
 
-      - name: Upload IPA
+      - name:  Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: InterMesh-iOS-App
