@@ -74,7 +74,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: intermesh-ios-framework
-          path: mobile/output/
+          path: mobile/output/Intermesh.xcframework
 
       - name: Set up Xcode
         run: |
