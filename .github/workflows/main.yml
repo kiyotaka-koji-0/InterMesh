@@ -1,14 +1,14 @@
 name: Build iOS App
 
-on:   
+on:    
   push:
-    branches: 
-      - main
-  pull_request:
     branches:  
       - main
+  pull_request:
+    branches:   
+      - main
 
-jobs:  
+jobs:   
   build-ios: 
     name: Build iOS App
     runs-on: macos-latest
@@ -33,7 +33,7 @@ jobs:
 
       - name: Cache Go Modules
         uses: actions/cache@v3
-        with:  
+        with:    
           path:  ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
@@ -42,7 +42,7 @@ jobs:
       - name: Build iOS Framework
         run: |
           mkdir -p mobile/output
-          gomobile bind -target=ios -o mobile/output/Intermesh.xcframework ./mobile
+          gomobile bind -target=ios -o mobile/output/Intermesh.xcframework ./mobile/output
 
       - name: Set up Xcode
         run: |
@@ -51,19 +51,34 @@ jobs:
       - name: Build iOS App
         working-directory: mobile/ios-app
         run: |
-          xcodebuild -scheme InterMesh -sdk iphoneos -configuration Release archive -archivePath ./build/InterMesh.xcarchive
+          xcodebuild -scheme InterMesh \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath ./build/DerivedData \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
 
-      - name:  Export IPA
-        working-directory: mobile/ios-app
+      - name: Create IPA
+        working-directory:  mobile/ios-app
         run: |
-          xcodebuild -exportArchive \
-            -archivePath ./build/InterMesh.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath ./build \
-            -allowProvisioningUpdates
+          # Find the . app bundle
+          APP_PATH=$(find ./build/DerivedData/Build/Products/Release-iphoneos -name "*. app" | head -n 1)
+          
+          # Create Payload directory
+          mkdir -p ./build/Payload
+          
+          # Copy . app to Payload
+          cp -r "$APP_PATH" ./build/Payload/
+          
+          # Create IPA (it's just a zip file)
+          cd ./build
+          zip -r InterMesh.ipa Payload
+          
+          echo "IPA created at: ./build/InterMesh.ipa"
 
-      - name: Upload IPA Artifact
+      - name: Upload IPA for Sideloadly
         uses: actions/upload-artifact@v4
-        with: 
-          name: InterMesh. ipa
+        with:   
+          name: InterMesh-Sideloadly
           path: mobile/ios-app/build/InterMesh.ipa
