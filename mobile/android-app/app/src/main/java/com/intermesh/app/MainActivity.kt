@@ -37,11 +37,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var wifiDirectManager: WifiDirectManager
     private var isWifiDirectEnabled = false
     
+    // BLE manager for cross-platform connectivity (iOS <-> Android)
+    private lateinit var bleManager: BLEManager
+    private var isBleEnabled = false
+    
     private var isConnected = false
     private val mainHandler = Handler(Looper.getMainLooper())
     
     // Track discovered P2P peers separately
     private val p2pPeers = mutableMapOf<String, WifiDirectManager.PeerInfo>()
+    private val blePeers = mutableMapOf<String, BLEManager.BLEPeer>()
     
     companion object {
         private const val TAG = "InterMesh"
@@ -59,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         if (checkPermissions()) {
             initializeMesh()
             initializeWifiDirect()
+            initializeBLE()
         } else {
             requestPermissions()
         }
@@ -133,6 +139,12 @@ class MainActivity : AppCompatActivity() {
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             permissions.add(Manifest.permission.NEARBY_WIFI_DEVICES)
+            permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+            permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+            permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            permissions.add(Manifest.permission.BLUETOOTH)
+            permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
         }
         
         return permissions.all {
@@ -148,6 +160,16 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.CHANGE_WIFI_STATE,
             Manifest.permission.INTERNET
         )
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(Manifest.permission.NEARBY_WIFI_DEVICES)
+            permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+            permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+            permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            permissions.add(Manifest.permission.BLUETOOTH)
+            permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
+        }
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             permissions.add(Manifest.permission.NEARBY_WIFI_DEVICES)
@@ -171,6 +193,7 @@ class MainActivity : AppCompatActivity() {
             if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 initializeMesh()
                 initializeWifiDirect()
+                initializeBLE()
             } else {
                 Toast.makeText(
                     this,
@@ -263,6 +286,67 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
+    private fun initializeBLE() {
+        try {
+            bleManager = BLEManager(this)
+            
+            if (!bleManager.initialize(deviceId, "Android-${deviceId.takeLast(6)}")) {
+                Log.w(TAG, "BLE not available on this device")
+                return
+            }
+            
+            isBleEnabled = true
+            
+            // Set up BLE callbacks
+            bleManager.onPeerDiscovered = { peer ->
+                mainHandler.post {
+                    blePeers[peer.address] = peer
+                    Log.d(TAG, "BLE Peer found: ${peer.name} (${peer.platform})")
+                    updatePeerCount()
+                    showMessage("BLE: Found ${peer.name} (${peer.platform})")
+                }
+            }
+            
+            bleManager.onPeerConnected = { peer ->
+                mainHandler.post {
+                    blePeers[peer.address] = peer
+                    Log.d(TAG, "BLE Connected to: ${peer.name} (${peer.platform})")
+                    showMessage("BLE Connected: ${peer.name} (${peer.platform})")
+                    updatePeerCount()
+                }
+            }
+            
+            bleManager.onPeerDisconnected = { address ->
+                mainHandler.post {
+                    val peer = blePeers.remove(address)
+                    Log.d(TAG, "BLE Peer disconnected: ${peer?.name ?: address}")
+                    updatePeerCount()
+                }
+            }
+            
+            bleManager.onMessageReceived = { from, data ->
+                mainHandler.post {
+                    val message = String(data, Charsets.UTF_8)
+                    Log.d(TAG, "BLE Message from $from: $message")
+                    showMessage("BLE: $message")
+                }
+            }
+            
+            bleManager.onError = { error ->
+                mainHandler.post {
+                    Log.e(TAG, "BLE error: $error")
+                    showMessage("BLE Error: $error")
+                }
+            }
+            
+            Log.d(TAG, "BLE Manager initialized")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initialize BLE: ${e.message}", e)
+            isBleEnabled = false
+        }
+    }
+    
     private fun updatePeerCount() {
         val meshPeers = if (::mobileApp.isInitialized && isConnected) {
             try {
@@ -270,7 +354,8 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) { 0 }
         } else 0
         
-        val totalPeers = meshPeers + p2pPeers.size
+        // Combine WiFi Direct + BLE peers
+        val totalPeers = meshPeers + p2pPeers.size + blePeers.size
         peersCountText.text = totalPeers.toString()
         
         // Update proxies (P2P peers with internet)
@@ -300,13 +385,21 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "WiFi Direct discovery started")
             }
             
+            // Start BLE for cross-platform connectivity (iOS <-> Android)
+            if (isBleEnabled) {
+                bleManager.start()
+                Log.d(TAG, "BLE started for cross-platform discovery")
+            }
+            
             // Now connected
             isConnected = true
             connectButton.isEnabled = true
             updateConnectionStatus(true)
             
-            val mode = if (isWifiDirectEnabled) "Mesh + WiFi Direct" else "Mesh only"
-            showMessage("Connected! ($mode) Searching for peers...")
+            val modes = mutableListOf("Mesh")
+            if (isWifiDirectEnabled) modes.add("WiFi Direct")
+            if (isBleEnabled) modes.add("BLE")
+            showMessage("Connected! (${modes.joinToString(" + ")}) Searching for peers...")
             
             // Start periodic stats update
             startStatsUpdate()
@@ -321,6 +414,11 @@ class MainActivity : AppCompatActivity() {
     
     private fun disconnectFromMesh() {
         try {
+            // Stop BLE
+            if (isBleEnabled && ::bleManager.isInitialized) {
+                bleManager.stop()
+            }
+            
             // Stop WiFi Direct
             if (isWifiDirectEnabled) {
                 wifiDirectManager.stopDiscovery()
@@ -332,6 +430,7 @@ class MainActivity : AppCompatActivity() {
             
             isConnected = false
             p2pPeers.clear()
+            blePeers.clear()
             updateConnectionStatus(false)
             showMessage("Disconnected from mesh")
             
@@ -363,23 +462,55 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun showPeerSelectionDialog() {
-        if (p2pPeers.isEmpty()) {
-            showMessage("No WiFi Direct peers found yet")
+        // Combine WiFi Direct and BLE peers
+        val allPeers = mutableListOf<Pair<String, () -> Unit>>()
+        
+        // Add WiFi Direct peers
+        p2pPeers.values.forEach { peer ->
+            allPeers.add("📶 ${peer.deviceName} (WiFi Direct)" to {
+                showMessage("Connecting to ${peer.deviceName} via WiFi Direct...")
+                wifiDirectManager.connectToPeer(peer.deviceAddress)
+            })
+        }
+        
+        // Add BLE peers
+        blePeers.values.forEach { peer ->
+            val platformIcon = if (peer.platform == "ios") "🍎" else "🤖"
+            allPeers.add("$platformIcon ${peer.name} (BLE - ${peer.platform})" to {
+                showMessage("Connecting to ${peer.name} via BLE...")
+                bleManager.connectToPeer(peer)
+            })
+        }
+        
+        if (allPeers.isEmpty()) {
+            showMessage("No peers found yet. Make sure other devices are nearby with InterMesh running.")
             return
         }
         
-        val peerList = p2pPeers.values.toList()
-        val peerNames = peerList.map { "${it.deviceName} (${it.deviceAddress.takeLast(8)})" }.toTypedArray()
+        val peerNames = allPeers.map { it.first }.toTypedArray()
         
         AlertDialog.Builder(this)
             .setTitle("Connect to Peer")
             .setItems(peerNames) { _, which ->
-                val selectedPeer = peerList[which]
-                showMessage("Connecting to ${selectedPeer.deviceName}...")
-                wifiDirectManager.connectToPeer(selectedPeer.deviceAddress)
+                allPeers[which].second()
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+    
+    private fun sendTestMessage() {
+        // Send to both WiFi Direct and BLE peers
+        val testMessage = "Hello from Android ${deviceId.takeLast(6)}!"
+        
+        if (isBleEnabled && bleManager.getConnectedPeerCount() > 0) {
+            bleManager.sendTextMessage(testMessage)
+            showMessage("Test message sent via BLE")
+        }
+        
+        if (isWifiDirectEnabled && wifiDirectManager.isConnectedToPeer()) {
+            wifiDirectManager.sendData(testMessage.toByteArray())
+            showMessage("Test message sent via WiFi Direct")
+        }
     }
     
     private fun enableInternetSharing() {
@@ -427,8 +558,8 @@ class MainActivity : AppCompatActivity() {
         try {
             val stats = mobileApp.getNetworkStats()
             
-            // Combine mesh peers with P2P peers
-            val totalPeers = stats.peerCount + p2pPeers.size
+            // Combine mesh peers with P2P peers (WiFi Direct + BLE)
+            val totalPeers = stats.peerCount + p2pPeers.size + blePeers.size
             peersCountText.text = totalPeers.toString()
             proxiesCountText.text = stats.availableProxies.toString()
             
@@ -447,6 +578,11 @@ class MainActivity : AppCompatActivity() {
         
         // Stop stats updates
         stopStatsUpdate()
+        
+        // Clean up BLE
+        if (::bleManager.isInitialized) {
+            bleManager.stop()
+        }
         
         // Clean up WiFi Direct
         if (::wifiDirectManager.isInitialized) {

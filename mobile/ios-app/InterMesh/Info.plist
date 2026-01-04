@@ -24,11 +24,20 @@
 	<string>InterMesh needs local network access to discover and connect to nearby devices for mesh networking.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>InterMesh needs location access to enable WiFi functionality for mesh networking.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>InterMesh uses Bluetooth to discover and connect to nearby Android and iOS devices for cross-platform mesh networking.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>InterMesh uses Bluetooth to connect with nearby devices for mesh networking.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_intermesh._tcp</string>
 		<string>_intermesh._udp</string>
 		<string>_intermesh-p2p._tcp</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+		<string>bluetooth-peripheral</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

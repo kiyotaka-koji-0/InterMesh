@@ -11,6 +11,7 @@ import Intermesh
 struct ContentView: View {
     @StateObject private var meshManager = MeshManager()
     @StateObject private var multipeerManager = MultipeerManager()
+    @StateObject private var bleManager = BLEManager()
     @State private var showPeerList = false
     
     var body: some View {
@@ -25,15 +26,28 @@ struct ContentView: View {
                         
                         Spacer()
                         
-                        // P2P Status indicator
-                        if multipeerManager.isBrowsing {
-                            HStack(spacing: 4) {
-                                Circle()
-                                    .fill(Color.green)
-                                    .frame(width: 8, height: 8)
-                                Text("P2P")
-                                    .font(.caption)
-                                    .foregroundColor(.green)
+                        // P2P Status indicators
+                        HStack(spacing: 8) {
+                            if multipeerManager.isBrowsing {
+                                HStack(spacing: 4) {
+                                    Circle()
+                                        .fill(Color.green)
+                                        .frame(width: 8, height: 8)
+                                    Text("MC")
+                                        .font(.caption)
+                                        .foregroundColor(.green)
+                                }
+                            }
+                            
+                            if bleManager.isScanning || bleManager.isAdvertising {
+                                HStack(spacing: 4) {
+                                    Circle()
+                                        .fill(Color.blue)
+                                        .frame(width: 8, height: 8)
+                                    Text("BLE")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
                     }
@@ -67,10 +81,13 @@ struct ContentView: View {
                             Text("P2P Status:")
                                 .foregroundColor(.gray)
                             Spacer()
-                            Text(multipeerManager.connectionStatus)
-                                .foregroundColor(multipeerManager.connectedPeers.isEmpty ? .orange : .green)
-                                .fontWeight(.medium)
-                                .font(.caption)
+                            VStack(alignment: .trailing) {
+                                Text("MC: \(multipeerManager.connectionStatus)")
+                                    .font(.caption)
+                                Text("BLE: \(bleManager.connectionStatus)")
+                                    .font(.caption)
+                            }
+                            .foregroundColor(.orange)
                         }
                     }
                     .padding()
@@ -96,10 +113,11 @@ struct ContentView: View {
                             
                             Spacer()
                             
-                            // P2P Peers (tappable)
+                            // P2P Peers (tappable) - Combined MC + BLE
                             Button(action: { showPeerList = true }) {
                                 VStack(alignment: .leading) {
-                                    Text("\(multipeerManager.discoveredPeers.count)")
+                                    let totalP2P = multipeerManager.discoveredPeers.count + bleManager.discoveredPeers.count
+                                    Text("\(totalP2P)")
                                         .font(.system(size: 32, weight: .bold))
                                         .foregroundColor(.purple)
                                     Text("P2P Peers")
@@ -107,7 +125,7 @@ struct ContentView: View {
                                         .foregroundColor(.gray)
                                 }
                             }
-                            .disabled(multipeerManager.discoveredPeers.isEmpty)
+                            .disabled(multipeerManager.discoveredPeers.isEmpty && bleManager.discoveredPeers.isEmpty)
                             
                             Spacer()
                             
@@ -123,14 +141,28 @@ struct ContentView: View {
                         }
                         
                         // Connected P2P peers indicator
-                        if !multipeerManager.connectedPeers.isEmpty {
+                        if !multipeerManager.connectedPeers.isEmpty || !bleManager.connectedPeers.isEmpty {
                             Divider()
-                            HStack {
-                                Image(systemName: "wifi")
-                                    .foregroundColor(.green)
-                                Text("Connected via P2P: \(multipeerManager.connectedPeers.map { $0.displayName }.joined(separator: ", "))")
-                                    .font(.caption)
-                                    .foregroundColor(.green)
+                            VStack(alignment: .leading, spacing: 4) {
+                                if !multipeerManager.connectedPeers.isEmpty {
+                                    HStack {
+                                        Image(systemName: "wifi")
+                                            .foregroundColor(.green)
+                                        Text("MC: \(multipeerManager.connectedPeers.map { $0.displayName }.joined(separator: ", "))")
+                                            .font(.caption)
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                                if !bleManager.connectedPeers.isEmpty {
+                                    HStack {
+                                        Image(systemName: "wave.3.right")
+                                            .foregroundColor(.blue)
+                                        Text("BLE: \(bleManager.connectedPeers.map { "\($0.name) (\($0.platform))" }.joined(separator: ", "))")
+                                            .font(.caption)
+                                            .foregroundColor(.blue)
+                                    }
+                                }
+                            }
                             }
                         }
                     }
@@ -159,11 +191,13 @@ struct ContentView: View {
                         Button(action: {
                             meshManager.toggleConnection()
                             
-                            // Also toggle P2P discovery
+                            // Also toggle P2P discovery (MultipeerConnectivity + BLE)
                             if meshManager.isConnected {
                                 multipeerManager.startMeshDiscovery()
+                                bleManager.start() // Start BLE for cross-platform (iOS <-> Android)
                             } else {
                                 multipeerManager.stopMeshDiscovery()
+                                bleManager.stop()
                             }
                         }) {
                             HStack {
@@ -193,13 +227,24 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .cornerRadius(12)
                         }
-                        .disabled(!meshManager.isConnected && multipeerManager.connectedPeers.isEmpty)
-                        .opacity((meshManager.isConnected || !multipeerManager.connectedPeers.isEmpty) ? 1.0 : 0.5)
+                        .disabled(!meshManager.isConnected && multipeerManager.connectedPeers.isEmpty && bleManager.connectedPeers.isEmpty)
+                        .opacity((meshManager.isConnected || !multipeerManager.connectedPeers.isEmpty || !bleManager.connectedPeers.isEmpty) ? 1.0 : 0.5)
                         
                         // Send Test Message (for P2P testing)
-                        if !multipeerManager.connectedPeers.isEmpty {
+                        if !multipeerManager.connectedPeers.isEmpty || !bleManager.connectedPeers.isEmpty {
                             Button(action: {
-                                multipeerManager.sendMessage("Hello from \(UIDevice.current.name)!")
+                                let testMessage = "Hello from \(UIDevice.current.name)!"
+                                
+                                // Send via MultipeerConnectivity
+                                if !multipeerManager.connectedPeers.isEmpty {
+                                    multipeerManager.sendMessage(testMessage)
+                                }
+                                
+                                // Send via BLE (to Android devices)
+                                if !bleManager.connectedPeers.isEmpty {
+                                    bleManager.sendMessage(testMessage)
+                                }
+                                
                                 meshManager.statusMessage = "Test message sent to P2P peers"
                             }) {
                                 HStack {
@@ -227,21 +272,37 @@ struct ContentView: View {
                             .multilineTextAlignment(.center)
                     }
                     
-                    // Last received P2P message
-                    if !multipeerManager.lastReceivedMessage.isEmpty {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text("Last P2P Message:")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            Text(multipeerManager.lastReceivedMessage)
-                                .font(.caption)
-                                .foregroundColor(.purple)
-                                .padding(8)
-                                .background(Color.purple.opacity(0.1))
-                                .cornerRadius(8)
+                    // Last received messages
+                    VStack(spacing: 8) {
+                        if !multipeerManager.lastReceivedMessage.isEmpty {
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("Last MC Message:")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                Text(multipeerManager.lastReceivedMessage)
+                                    .font(.caption)
+                                    .foregroundColor(.purple)
+                                    .padding(8)
+                                    .background(Color.purple.opacity(0.1))
+                                    .cornerRadius(8)
+                            }
                         }
-                        .padding(.horizontal)
+                        
+                        if !bleManager.lastReceivedMessage.isEmpty {
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("Last BLE Message:")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                Text(bleManager.lastReceivedMessage)
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                                    .padding(8)
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(8)
+                            }
+                        }
                     }
+                    .padding(.horizontal)
                     
                     Spacer(minLength: 30)
                 }
@@ -249,7 +310,7 @@ struct ContentView: View {
             .navigationBarHidden(true)
         }
         .sheet(isPresented: $showPeerList) {
-            PeerListView(multipeerManager: multipeerManager)
+            PeerListView(multipeerManager: multipeerManager, bleManager: bleManager)
         }
         .alert("Error", isPresented: $meshManager.showError) {
             Button("OK", role: .cancel) { }
@@ -263,28 +324,30 @@ struct ContentView: View {
         }
         .onAppear {
             setupMultipeerCallbacks()
+            setupBLECallbacks()
         }
         .onDisappear {
             multipeerManager.cleanup()
+            bleManager.stop()
         }
     }
     
     private func setupMultipeerCallbacks() {
         multipeerManager.onPeerDiscovered = { peer in
-            meshManager.statusMessage = "Found P2P peer: \(peer.displayName)"
+            meshManager.statusMessage = "Found MC peer: \(peer.displayName)"
         }
         
         multipeerManager.onPeerConnected = { peer in
-            meshManager.statusMessage = "Connected to P2P peer: \(peer.displayName)"
+            meshManager.statusMessage = "Connected to MC peer: \(peer.displayName)"
         }
         
         multipeerManager.onPeerDisconnected = { name in
-            meshManager.statusMessage = "P2P peer disconnected: \(name)"
+            meshManager.statusMessage = "MC peer disconnected: \(name)"
         }
         
         multipeerManager.onMessageReceived = { from, data in
             if let message = String(data: data, encoding: .utf8) {
-                meshManager.statusMessage = "Message from \(from): \(message)"
+                meshManager.statusMessage = "MC message from \(from): \(message)"
             }
         }
         
@@ -293,18 +356,44 @@ struct ContentView: View {
             meshManager.showError = true
         }
     }
+    
+    private func setupBLECallbacks() {
+        bleManager.onPeerDiscovered = { peer in
+            meshManager.statusMessage = "Found BLE peer: \(peer.name) (\(peer.platform))"
+        }
+        
+        bleManager.onPeerConnected = { peer in
+            meshManager.statusMessage = "Connected to BLE peer: \(peer.name) (\(peer.platform))"
+        }
+        
+        bleManager.onPeerDisconnected = { id in
+            meshManager.statusMessage = "BLE peer disconnected: \(id)"
+        }
+        
+        bleManager.onMessageReceived = { from, data in
+            if let message = String(data: data, encoding: .utf8) {
+                meshManager.statusMessage = "BLE message from \(from): \(message)"
+            }
+        }
+        
+        bleManager.onError = { error in
+            meshManager.errorMessage = error
+            meshManager.showError = true
+        }
+    }
 }
 
 // MARK: - Peer List View
-
 struct PeerListView: View {
     @ObservedObject var multipeerManager: MultipeerManager
+    @ObservedObject var bleManager: BLEManager
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationView {
             List {
-                if multipeerManager.discoveredPeers.isEmpty {
+                // Empty state
+                if multipeerManager.discoveredPeers.isEmpty && bleManager.discoveredPeers.isEmpty {
                     VStack(spacing: 10) {
                         Image(systemName: "wifi.exclamationmark")
                             .font(.largeTitle)
@@ -318,8 +407,11 @@ struct PeerListView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                } else {
-                    Section(header: Text("Discovered Peers")) {
+                }
+                
+                // MultipeerConnectivity Peers (iOS devices)
+                if !multipeerManager.discoveredPeers.isEmpty {
+                    Section(header: Text("📱 iOS Peers (MultipeerConnectivity)")) {
                         ForEach(multipeerManager.discoveredPeers) { peer in
                             HStack {
                                 VStack(alignment: .leading) {
@@ -343,6 +435,50 @@ struct PeerListView: View {
                                         multipeerManager.connect(to: peer)
                                     }
                                     .buttonStyle(.borderedProminent)
+                                    .tint(.purple)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // BLE Peers (Cross-platform - Android devices)
+                if !bleManager.discoveredPeers.isEmpty {
+                    Section(header: Text("🤖 Cross-Platform Peers (BLE)")) {
+                        ForEach(bleManager.discoveredPeers) { peer in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    HStack {
+                                        Text(peer.name)
+                                            .fontWeight(.medium)
+                                        
+                                        // Platform badge
+                                        Text(peer.platform)
+                                            .font(.caption2)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(peer.platform == "android" ? Color.green.opacity(0.2) : Color.blue.opacity(0.2))
+                                            .foregroundColor(peer.platform == "android" ? .green : .blue)
+                                            .cornerRadius(4)
+                                    }
+                                    
+                                    if peer.isConnected {
+                                        Text("Connected")
+                                            .font(.caption)
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                if peer.isConnected {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                } else {
+                                    Button("Connect") {
+                                        bleManager.connect(to: peer)
+                                    }
+                                    .buttonStyle(.borderedProminent)
                                     .tint(.blue)
                                 }
                             }
@@ -350,18 +486,32 @@ struct PeerListView: View {
                     }
                 }
                 
-                if !multipeerManager.connectedPeers.isEmpty {
-                    Section(header: Text("Connected Peers")) {
+                // Connected peers summary
+                if !multipeerManager.connectedPeers.isEmpty || !bleManager.connectedPeers.isEmpty {
+                    Section(header: Text("✅ Connected")) {
                         ForEach(multipeerManager.connectedPeers) { peer in
                             HStack {
                                 Image(systemName: "wifi")
-                                    .foregroundColor(.green)
+                                    .foregroundColor(.purple)
                                 Text(peer.displayName)
                                     .fontWeight(.medium)
                                 Spacer()
-                                Text("Connected")
+                                Text("MC")
                                     .font(.caption)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(.purple)
+                            }
+                        }
+                        
+                        ForEach(bleManager.connectedPeers) { peer in
+                            HStack {
+                                Image(systemName: "wave.3.right")
+                                    .foregroundColor(.blue)
+                                Text("\(peer.name) (\(peer.platform))")
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Text("BLE")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
                             }
                         }
                     }
