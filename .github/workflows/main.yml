@@ -10,34 +10,39 @@ on:
 
 jobs:   
   build-ios: 
-    name:   Build iOS App
+    name:    Build iOS App
     runs-on:  macos-latest
 
     steps:    
       - name: Checkout Repository
-        uses:  actions/checkout@v3
+        uses:   actions/checkout@v3
 
       - name:  Set up Go
         uses: actions/setup-go@v4
-        with: 
+        with:  
           go-version: '1.21'
           check-latest: true
 
-      - name:  Verify Go Version
+      - name:   Verify Go Version
         run: go version
 
-      - name: Install gomobile and gobind
+      - name:  Install and setup gomobile
         run: |
-          # Install gomobile
-          go install golang.org/x/mobile/cmd/gomobile@latest
+          # Install gomobile and gobind
+          go install golang. org/x/mobile/cmd/gomobile@latest
           go install golang.org/x/mobile/cmd/gobind@latest
           
-          # Initialize gomobile
+          # Manually download the mobile package
+          go get golang.org/x/mobile/bind
+          go get golang.org/x/mobile/bind/objc
+          
+          # Initialize gomobile with NDK path
           gomobile init
           
-          # Verify installation
-          which gomobile
-          which gobind
+          # Verify the bind package exists
+          ls -la ~/go/pkg/mod/golang.org/x/mobile* || echo "Mobile package not in expected location"
+          
+          # Test gomobile
           gomobile version
 
       - name: Cache Go Modules
@@ -45,14 +50,16 @@ jobs:
         with:      
           path:  |
             ~/go/pkg/mod
-            ~/go/pkg/gomobile
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+            ~/. gomobile
+          key: ${{ runner.os }}-go-gomobile-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-gomobile-
 
-      - name:  Tidy Go modules
+      - name:  Tidy Go modules in mobile directory
         working-directory: mobile
-        run:  |
+        run:   |
+          # Ensure mobile package is available
+          go get golang.org/x/mobile/bind
           go mod tidy
           go mod download
           go mod verify
@@ -62,19 +69,28 @@ jobs:
           mkdir -p mobile/output
           cd mobile
           
-          # Add verbose output
-          gomobile bind -v -target=ios -o output/Intermesh.xcframework . 
+          # Set GOPATH explicitly
+          export GOPATH=$HOME/go
+          export PATH=$GOPATH/bin:$PATH
+          
+          # Build with verbose output
+          gomobile bind -v -x -target=ios -o output/Intermesh.xcframework . 
 
       - name: Verify Framework Location
         run: |
           echo "Checking framework location:"
           ls -la mobile/output/
-          echo "Framework contents:"
-          ls -la mobile/output/Intermesh.xcframework/
+          if [ -d "mobile/output/Intermesh.xcframework" ]; then
+            echo "Framework contents:"
+            ls -la mobile/output/Intermesh.xcframework/
+          else
+            echo "Error: Framework not created!"
+            exit 1
+          fi
 
       - name: Set up Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode. app/Contents/Developer
           xcodebuild -version
 
       - name: Build iOS App
@@ -90,7 +106,7 @@ jobs:
 
       - name: Create IPA
         working-directory: mobile/ios-app
-        run: |
+        run:  |
           # Find the . app bundle
           APP_PATH=$(find ./build/DerivedData/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
           
@@ -115,7 +131,7 @@ jobs:
           ls -lh InterMesh.ipa
 
       - name: Upload IPA for Sideloadly
-        uses:  actions/upload-artifact@v4
+        uses:   actions/upload-artifact@v4
         with:   
           name: InterMesh-Sideloadly
           path: mobile/ios-app/build/InterMesh.ipa
