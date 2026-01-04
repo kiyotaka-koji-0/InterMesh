@@ -102,7 +102,7 @@ echo ""
 
 # Build for iOS device
 echo -e "${YELLOW}Building for iOS device (this may take a while)...${NC}"
-xcodebuild clean build \
+BUILD_OUTPUT=$(xcodebuild clean build \
     -project InterMesh.xcodeproj \
     -scheme InterMesh \
     -sdk iphoneos \
@@ -110,10 +110,12 @@ xcodebuild clean build \
     -derivedDataPath ./build \
     CODE_SIGN_IDENTITY="" \
     CODE_SIGNING_REQUIRED=NO \
-    CODE_SIGNING_ALLOWED=NO \
-    | grep -E "^(Build|▸)" || true
+    CODE_SIGNING_ALLOWED=NO 2>&1)
+BUILD_STATUS=$?
 
-if [ $? -eq 0 ]; then
+echo "$BUILD_OUTPUT" | grep -E "^(Build|▸)" || true
+
+if [ $BUILD_STATUS -eq 0 ]; then
     echo -e "${GREEN}✓ iOS app built successfully${NC}"
 else
     echo -e "${RED}❌ Failed to build iOS app${NC}"

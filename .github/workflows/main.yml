@@ -74,7 +74,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: intermesh-ios-framework
-          path: mobile/output/Intermesh.xcframework
+          path: mobile/output/
 
       - name: Set up Xcode
         run: |
@@ -84,12 +84,11 @@ jobs:
       - name: Build iOS App
         working-directory: mobile/ios-app
         run: |
-          xcodebuild clean build \
+          xcodebuild clean archive \
             -scheme InterMesh \
             -sdk iphoneos \
             -configuration Release \
             -archivePath ./build/InterMesh.xcarchive \
-            archive \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
