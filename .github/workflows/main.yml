@@ -42,7 +42,7 @@ jobs:
       - name: Build iOS Framework
         run: |
           mkdir -p mobile/output
-          gomobile bind -target=ios -o mobile/output/Intermesh. xcframework ./mobile
+          gomobile bind -target=ios -o mobile/output/Intermesh.xcframework ./mobile
 
       - name: Set up Xcode
         run: |
@@ -51,7 +51,7 @@ jobs:
       - name: Build iOS App
         working-directory: mobile/ios-app
         run: |
-          xcodebuild -scheme InterMesh -sdk iphoneos -configuration Release archive -archivePath ./build/InterMesh. xcarchive
+          xcodebuild -scheme InterMesh -sdk iphoneos -configuration Release archive -archivePath ./build/InterMesh.xcarchive
 
       - name:  Export IPA
         working-directory: mobile/ios-app
