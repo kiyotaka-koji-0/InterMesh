@@ -2,49 +2,49 @@ name: Build iOS App
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
   build-ios:
+    name: Build iOS App
     runs-on: macos-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
-    
-    - name: Install gomobile
-      run: |
-        go install golang.org/x/mobile/cmd/gomobile@latest
-        gomobile init
-    
-    - name: Build iOS Framework
-      run: |
-        mkdir -p mobile/output
-        gomobile bind -target=ios -o mobile/output/Intermesh.xcframework ./mobile
-    
-    - name: Upload XCFramework
-      uses: actions/upload-artifact@v3
-      with:
-        name: intermesh-ios-framework
-        path: mobile/output/Intermesh.xcframework
-    
-    - name: Create iOS Sample App (Optional)
-      run: |
-        # You can add Xcode build commands here if you create an iOS app project
-        echo "iOS framework built successfully"
-    
-    - name: Release (on tag)
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      with:
-        files: mobile/output/Intermesh.xcframework/**/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.20
+
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init
+
+      - name: Build iOS Framework
+        run: |
+          gomobile bind -target=ios -o mobile/ios/InterMesh.framework ./mobile
+
+      - name: Set up Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build iOS App
+        run: |
+          xcodebuild -scheme YourAppScheme -sdk iphoneos -configuration Release archive -archivePath ./build/InterMesh.xcarchive
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive -archivePath ./build/InterMesh.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath ./build
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterMesh.ipa
+          path: ./build/InterMesh.ipa
