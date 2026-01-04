@@ -28,6 +28,7 @@
 	<array>
 		<string>_intermesh._tcp</string>
 		<string>_intermesh._udp</string>
+		<string>_intermesh-p2p._tcp</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

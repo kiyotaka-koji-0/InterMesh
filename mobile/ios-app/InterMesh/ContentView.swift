@@ -10,130 +10,246 @@ import Intermesh
 
 struct ContentView: View {
     @StateObject private var meshManager = MeshManager()
+    @StateObject private var multipeerManager = MultipeerManager()
+    @State private var showPeerList = false
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                // Header
-                Text("InterMesh")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Header
+                    HStack {
+                        Text("InterMesh")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                        
+                        Spacer()
+                        
+                        // P2P Status indicator
+                        if multipeerManager.isBrowsing {
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(Color.green)
+                                    .frame(width: 8, height: 8)
+                                Text("P2P")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            }
+                        }
+                    }
                     .padding(.top, 20)
-                
-                // Device Info Card
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Device Information")
-                        .font(.headline)
+                    .padding(.horizontal)
                     
-                    HStack {
-                        Text("Device ID:")
-                            .foregroundColor(.gray)
-                        Spacer()
-                        Text(meshManager.deviceID)
-                            .fontWeight(.medium)
-                    }
-                    
-                    HStack {
-                        Text("Status:")
-                            .foregroundColor(.gray)
-                        Spacer()
-                        Text(meshManager.isConnected ? "Connected" : "Disconnected")
-                            .foregroundColor(meshManager.isConnected ? .green : .red)
-                            .fontWeight(.medium)
-                    }
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                .padding(.horizontal)
-                
-                // Statistics Card
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Network Statistics")
-                        .font(.headline)
-                    
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("\(meshManager.peerCount)")
-                                .font(.system(size: 32, weight: .bold))
-                            Text("Connected Peers")
-                                .font(.caption)
+                    // Device Info Card
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Device Information")
+                            .font(.headline)
+                        
+                        HStack {
+                            Text("Device ID:")
                                 .foregroundColor(.gray)
+                            Spacer()
+                            Text(String(meshManager.deviceID.suffix(12)))
+                                .fontWeight(.medium)
+                                .font(.system(.body, design: .monospaced))
                         }
                         
-                        Spacer()
-                        
-                        VStack(alignment: .leading) {
-                            Text("\(meshManager.proxyCount)")
-                                .font(.system(size: 32, weight: .bold))
-                            Text("Available Proxies")
-                                .font(.caption)
+                        HStack {
+                            Text("Status:")
                                 .foregroundColor(.gray)
+                            Spacer()
+                            Text(meshManager.isConnected ? "Connected" : "Disconnected")
+                                .foregroundColor(meshManager.isConnected ? .green : .red)
+                                .fontWeight(.medium)
+                        }
+                        
+                        HStack {
+                            Text("P2P Status:")
+                                .foregroundColor(.gray)
+                            Spacer()
+                            Text(multipeerManager.connectionStatus)
+                                .foregroundColor(multipeerManager.connectedPeers.isEmpty ? .orange : .green)
+                                .fontWeight(.medium)
+                                .font(.caption)
                         }
                     }
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                .padding(.horizontal)
-                
-                // Internet Sharing Toggle
-                VStack(spacing: 10) {
-                    Toggle("Share Internet", isOn: $meshManager.isSharingInternet)
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
-                        .onChange(of: meshManager.isSharingInternet) { newValue in
-                            meshManager.toggleInternetSharing(newValue)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    
+                    // Statistics Card
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Network Statistics")
+                            .font(.headline)
+                        
+                        HStack {
+                            // Mesh Peers
+                            VStack(alignment: .leading) {
+                                Text("\(meshManager.peerCount)")
+                                    .font(.system(size: 32, weight: .bold))
+                                    .foregroundColor(.blue)
+                                Text("Mesh Peers")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                            
+                            Spacer()
+                            
+                            // P2P Peers (tappable)
+                            Button(action: { showPeerList = true }) {
+                                VStack(alignment: .leading) {
+                                    Text("\(multipeerManager.discoveredPeers.count)")
+                                        .font(.system(size: 32, weight: .bold))
+                                        .foregroundColor(.purple)
+                                    Text("P2P Peers")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .disabled(multipeerManager.discoveredPeers.isEmpty)
+                            
+                            Spacer()
+                            
+                            // Proxies
+                            VStack(alignment: .leading) {
+                                Text("\(meshManager.proxyCount)")
+                                    .font(.system(size: 32, weight: .bold))
+                                    .foregroundColor(.green)
+                                Text("Proxies")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
                         }
-                }
-                .padding(.horizontal)
-                
-                Spacer()
-                
-                // Action Buttons
-                VStack(spacing: 15) {
-                    // Connect/Disconnect Button
-                    Button(action: {
-                        meshManager.toggleConnection()
-                    }) {
-                        Text(meshManager.isConnected ? "Disconnect from Mesh" : "Connect to Mesh")
-                            .fontWeight(.semibold)
+                        
+                        // Connected P2P peers indicator
+                        if !multipeerManager.connectedPeers.isEmpty {
+                            Divider()
+                            HStack {
+                                Image(systemName: "wifi")
+                                    .foregroundColor(.green)
+                                Text("Connected via P2P: \(multipeerManager.connectedPeers.map { $0.displayName }.joined(separator: ", "))")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    
+                    // Internet Sharing Toggle
+                    VStack(spacing: 10) {
+                        Toggle("Share Internet", isOn: $meshManager.isSharingInternet)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .onChange(of: meshManager.isSharingInternet) { newValue in
+                                meshManager.toggleInternetSharing(newValue)
+                            }
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer(minLength: 20)
+                    
+                    // Action Buttons
+                    VStack(spacing: 15) {
+                        // Connect/Disconnect Button
+                        Button(action: {
+                            meshManager.toggleConnection()
+                            
+                            // Also toggle P2P discovery
+                            if meshManager.isConnected {
+                                multipeerManager.startMeshDiscovery()
+                            } else {
+                                multipeerManager.stopMeshDiscovery()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: meshManager.isConnected ? "wifi.slash" : "wifi")
+                                Text(meshManager.isConnected ? "Disconnect from Mesh" : "Connect to Mesh")
+                                    .fontWeight(.semibold)
+                            }
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(meshManager.isConnected ? Color.red : Color.blue)
                             .foregroundColor(.white)
                             .cornerRadius(12)
-                    }
-                    
-                    // Request Internet Button
-                    Button(action: {
-                        meshManager.requestInternetAccess()
-                    }) {
-                        Text("Request Internet Access")
-                            .fontWeight(.semibold)
+                        }
+                        
+                        // Request Internet Button
+                        Button(action: {
+                            meshManager.requestInternetAccess()
+                        }) {
+                            HStack {
+                                Image(systemName: "globe")
+                                Text("Request Internet Access")
+                                    .fontWeight(.semibold)
+                            }
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.green)
                             .foregroundColor(.white)
                             .cornerRadius(12)
+                        }
+                        .disabled(!meshManager.isConnected && multipeerManager.connectedPeers.isEmpty)
+                        .opacity((meshManager.isConnected || !multipeerManager.connectedPeers.isEmpty) ? 1.0 : 0.5)
+                        
+                        // Send Test Message (for P2P testing)
+                        if !multipeerManager.connectedPeers.isEmpty {
+                            Button(action: {
+                                multipeerManager.sendMessage("Hello from \(UIDevice.current.name)!")
+                                meshManager.statusMessage = "Test message sent to P2P peers"
+                            }) {
+                                HStack {
+                                    Image(systemName: "paperplane.fill")
+                                    Text("Send P2P Test Message")
+                                        .fontWeight(.semibold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.purple)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                            }
+                        }
                     }
-                    .disabled(!meshManager.isConnected)
-                    .opacity(meshManager.isConnected ? 1.0 : 0.5)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 30)
-                
-                // Status Message
-                if !meshManager.statusMessage.isEmpty {
-                    Text(meshManager.statusMessage)
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                    .padding(.horizontal)
+                    .padding(.bottom, 10)
+                    
+                    // Status Message
+                    if !meshManager.statusMessage.isEmpty {
+                        Text(meshManager.statusMessage)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .padding(.horizontal)
+                            .multilineTextAlignment(.center)
+                    }
+                    
+                    // Last received P2P message
+                    if !multipeerManager.lastReceivedMessage.isEmpty {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Last P2P Message:")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            Text(multipeerManager.lastReceivedMessage)
+                                .font(.caption)
+                                .foregroundColor(.purple)
+                                .padding(8)
+                                .background(Color.purple.opacity(0.1))
+                                .cornerRadius(8)
+                        }
                         .padding(.horizontal)
-                        .padding(.bottom, 10)
+                    }
+                    
+                    Spacer(minLength: 30)
                 }
             }
             .navigationBarHidden(true)
+        }
+        .sheet(isPresented: $showPeerList) {
+            PeerListView(multipeerManager: multipeerManager)
         }
         .alert("Error", isPresented: $meshManager.showError) {
             Button("OK", role: .cancel) { }
@@ -144,6 +260,122 @@ struct ContentView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(meshManager.successMessage)
+        }
+        .onAppear {
+            setupMultipeerCallbacks()
+        }
+        .onDisappear {
+            multipeerManager.cleanup()
+        }
+    }
+    
+    private func setupMultipeerCallbacks() {
+        multipeerManager.onPeerDiscovered = { peer in
+            meshManager.statusMessage = "Found P2P peer: \(peer.displayName)"
+        }
+        
+        multipeerManager.onPeerConnected = { peer in
+            meshManager.statusMessage = "Connected to P2P peer: \(peer.displayName)"
+        }
+        
+        multipeerManager.onPeerDisconnected = { name in
+            meshManager.statusMessage = "P2P peer disconnected: \(name)"
+        }
+        
+        multipeerManager.onMessageReceived = { from, data in
+            if let message = String(data: data, encoding: .utf8) {
+                meshManager.statusMessage = "Message from \(from): \(message)"
+            }
+        }
+        
+        multipeerManager.onError = { error in
+            meshManager.errorMessage = error
+            meshManager.showError = true
+        }
+    }
+}
+
+// MARK: - Peer List View
+
+struct PeerListView: View {
+    @ObservedObject var multipeerManager: MultipeerManager
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        NavigationView {
+            List {
+                if multipeerManager.discoveredPeers.isEmpty {
+                    VStack(spacing: 10) {
+                        Image(systemName: "wifi.exclamationmark")
+                            .font(.largeTitle)
+                            .foregroundColor(.gray)
+                        Text("No peers discovered")
+                            .foregroundColor(.gray)
+                        Text("Make sure other devices have InterMesh running and are nearby")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                } else {
+                    Section(header: Text("Discovered Peers")) {
+                        ForEach(multipeerManager.discoveredPeers) { peer in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(peer.displayName)
+                                        .fontWeight(.medium)
+                                    
+                                    if multipeerManager.connectedPeers.contains(where: { $0.id == peer.id }) {
+                                        Text("Connected")
+                                            .font(.caption)
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                if multipeerManager.connectedPeers.contains(where: { $0.id == peer.id }) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                } else {
+                                    Button("Connect") {
+                                        multipeerManager.connect(to: peer)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.blue)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if !multipeerManager.connectedPeers.isEmpty {
+                    Section(header: Text("Connected Peers")) {
+                        ForEach(multipeerManager.connectedPeers) { peer in
+                            HStack {
+                                Image(systemName: "wifi")
+                                    .foregroundColor(.green)
+                                Text(peer.displayName)
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Text("Connected")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("P2P Peers")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
@@ -181,7 +413,7 @@ class MeshManager: ObservableObject {
         
         // Initialize the mobile app
         mobileApp = IntermeshNewMobileApp(deviceID, deviceName, ipAddress, macAddress)
-        statusMessage = "App initialized"
+        statusMessage = "Ready to connect"
     }
     
     func toggleConnection() {
@@ -189,17 +421,19 @@ class MeshManager: ObservableObject {
         
         if isConnected {
             // Disconnect
-            app.disconnectFromNetwork()
+            app.stop()
             isConnected = false
             peerCount = 0
             proxyCount = 0
-            statusMessage = "Disconnected from mesh network"
+            statusMessage = "Disconnected from mesh"
+            stopUpdatingStats()
         } else {
             // Connect
             do {
-                try app.connectToNetwork()
+                try app.start()
+                app.connectToNetwork()
                 isConnected = true
-                statusMessage = "Connected to mesh network"
+                statusMessage = "Connected! Searching for peers..."
                 startUpdatingStats()
             } catch {
                 errorMessage = "Failed to connect: \(error.localizedDescription)"
@@ -229,10 +463,9 @@ class MeshManager: ObservableObject {
     func requestInternetAccess() {
         guard let app = mobileApp else { return }
         
-        var error: NSError?
-        let result = app.requestInternetAccess(&error)
-        if let error = error {
-            errorMessage = error.localizedDescription
+        let result = app.requestInternetAccess()
+        if result.hasPrefix("Error") || result.hasPrefix("error") {
+            errorMessage = result
             showError = true
         } else {
             successMessage = result
@@ -249,9 +482,18 @@ class MeshManager: ObservableObject {
                 return
             }
             
-            self.peerCount = Int(app.getConnectedPeerCount())
-            self.proxyCount = Int(app.getAvailableProxyCount())
+            if let stats = app.getNetworkStats() {
+                DispatchQueue.main.async {
+                    self.peerCount = Int(stats.peerCount)
+                    self.proxyCount = Int(stats.availableProxies)
+                }
+            }
         }
+    }
+    
+    private func stopUpdatingStats() {
+        statsTimer?.invalidate()
+        statsTimer = nil
     }
     
     private func getIPAddress() -> String? {
@@ -295,7 +537,6 @@ class MeshManager: ObservableObject {
     
     private func getMACAddress() -> String? {
         // iOS doesn't allow direct MAC address access for privacy reasons
-        // Return a placeholder or generate a unique identifier
         return "00:00:00:00:00:00"
     }
 }
