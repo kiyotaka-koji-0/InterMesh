@@ -13,8 +13,8 @@
 		AA0007 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0008 /* Preview Assets.xcassets */; };
 		AA0009 /* Intermesh.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0010 /* Intermesh.xcframework */; };
 		AA0011 /* Intermesh.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AA0010 /* Intermesh.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		AA0030 /* MultipeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0031 /* MultipeerManager.swift */; };
-		AA0032 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0033 /* BLEManager.swift */; };
+		AA0040 /* MultipeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0031 /* MultipeerManager.swift */; };
+		AA0042 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0033 /* BLEManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -175,8 +175,8 @@
 			files = (
 				AA0003 /* ContentView.swift in Sources */,
 				AA0001 /* InterMeshApp.swift in Sources */,
-				AA0030 /* MultipeerManager.swift in Sources */,
-				AA0032 /* BLEManager.swift in Sources */,
+				AA0040 /* MultipeerManager.swift in Sources */,
+				AA0042 /* BLEManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
