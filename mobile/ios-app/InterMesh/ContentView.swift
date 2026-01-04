@@ -175,13 +175,8 @@ class MeshManager: ObservableObject {
         let macAddress = getMACAddress() ?? "00:00:00:00:00:00"
         
         // Initialize the mobile app
-        do {
-            mobileApp = IntermeshNewMobileApp(deviceID, deviceName, ipAddress, macAddress)
-            statusMessage = "App initialized"
-        } catch {
-            errorMessage = "Failed to initialize app: \(error.localizedDescription)"
-            showError = true
-        }
+        mobileApp = IntermeshNewMobileApp(deviceID, deviceName, ipAddress, macAddress)
+        statusMessage = "App initialized"
     }
     
     func toggleConnection() {
@@ -196,14 +191,15 @@ class MeshManager: ObservableObject {
             statusMessage = "Disconnected from mesh network"
         } else {
             // Connect
-            do {
-                try app.connectToNetwork()
+            var error: NSError?
+            app.connectToNetwork(&error)
+            if let error = error {
+                errorMessage = "Failed to connect: \(error.localizedDescription)"
+                showError = true
+            } else {
                 isConnected = true
                 statusMessage = "Connected to mesh network"
                 startUpdatingStats()
-            } catch {
-                errorMessage = "Failed to connect: \(error.localizedDescription)"
-                showError = true
             }
         }
     }
@@ -212,13 +208,14 @@ class MeshManager: ObservableObject {
         guard let app = mobileApp else { return }
         
         if enabled {
-            do {
-                try app.enableInternetSharing()
-                statusMessage = "Internet sharing enabled"
-            } catch {
+            var error: NSError?
+            app.enableInternetSharing(&error)
+            if let error = error {
                 errorMessage = "Failed to enable sharing: \(error.localizedDescription)"
                 showError = true
                 isSharingInternet = false
+            } else {
+                statusMessage = "Internet sharing enabled"
             }
         } else {
             app.disableInternetSharing()
@@ -229,14 +226,15 @@ class MeshManager: ObservableObject {
     func requestInternetAccess() {
         guard let app = mobileApp else { return }
         
-        do {
-            let result = try app.requestInternetAccess()
+        var error: NSError?
+        let result = app.requestInternetAccess(&error)
+        if let error = error {
+            errorMessage = error.localizedDescription
+            showError = true
+        } else {
             successMessage = result
             showSuccess = true
             statusMessage = "Connected to internet proxy"
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
         }
     }
     
