@@ -13,6 +13,8 @@
 		AA0007 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0008 /* Preview Assets.xcassets */; };
 		AA0009 /* Intermesh.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0010 /* Intermesh.xcframework */; };
 		AA0011 /* Intermesh.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AA0010 /* Intermesh.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AA0030 /* MultipeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0031 /* MultipeerManager.swift */; };
+		AA0032 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0033 /* BLEManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +39,8 @@
 		AA0010 /* Intermesh.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Intermesh.xcframework; path = ../output/Intermesh.xcframework; sourceTree = "<group>"; };
 		AA0013 /* InterMesh.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InterMesh.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA0031 /* MultipeerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipeerManager.swift; sourceTree = "<group>"; };
+		AA0033 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +69,8 @@
 			children = (
 				AA0002 /* InterMeshApp.swift */,
 				AA0004 /* ContentView.swift */,
+				AA0031 /* MultipeerManager.swift */,
+				AA0033 /* BLEManager.swift */,
 				AA0006 /* Assets.xcassets */,
 				AA0014 /* Info.plist */,
 				AA0020 /* Preview Content */,
@@ -169,6 +175,8 @@
 			files = (
 				AA0003 /* ContentView.swift in Sources */,
 				AA0001 /* InterMeshApp.swift in Sources */,
+				AA0030 /* MultipeerManager.swift in Sources */,
+				AA0032 /* BLEManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

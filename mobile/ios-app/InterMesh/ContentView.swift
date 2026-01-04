@@ -585,7 +585,11 @@ class MeshManager: ObservableObject {
             // Connect
             do {
                 try app.start()
-                app.connectToNetwork()
+                var error: NSError?
+                app.connectToNetwork(&error)
+                if let error = error {
+                    throw error
+                }
                 isConnected = true
                 statusMessage = "Connected! Searching for peers..."
                 startUpdatingStats()
@@ -617,8 +621,12 @@ class MeshManager: ObservableObject {
     func requestInternetAccess() {
         guard let app = mobileApp else { return }
         
-        let result = app.requestInternetAccess()
-        if result.hasPrefix("Error") || result.hasPrefix("error") {
+        var error: NSError?
+        let result = app.requestInternetAccess(&error)
+        if let error = error {
+            errorMessage = error.localizedDescription
+            showError = true
+        } else if result.hasPrefix("Error") || result.hasPrefix("error") {
             errorMessage = result
             showError = true
         } else {
