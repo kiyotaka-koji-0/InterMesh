@@ -1,20 +1,20 @@
 name: Build iOS App
 
-on: 
+on:  
   push:
     branches: 
       - main
   pull_request:
-    branches:
+    branches: 
       - main
 
-jobs:
+jobs: 
   build-ios:
     name: Build iOS App
     runs-on: macos-latest
 
     steps: 
-      - name: Checkout Repository
+      - name:  Checkout Repository
         uses: actions/checkout@v3
 
       - name: Set up Go
@@ -28,12 +28,12 @@ jobs:
           go install golang.org/x/mobile/cmd/gomobile@latest
           gomobile init
 
-      - name: Verify Go Version
+      - name:  Verify Go Version
         run: go version
 
       - name: Cache Go Modules
         uses: actions/cache@v3
-        with:
+        with: 
           path:  ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
@@ -41,7 +41,8 @@ jobs:
 
       - name: Build iOS Framework
         run: |
-          gomobile bind -target=ios -o mobile/ios/InterMesh.xcframework ./mobile
+          mkdir -p mobile/output
+          gomobile bind -target=ios -o mobile/output/Intermesh. xcframework ./mobile
 
       - name: Set up Xcode
         run: |
@@ -56,13 +57,13 @@ jobs:
         working-directory: mobile/ios-app
         run: |
           xcodebuild -exportArchive \
-            -archivePath ./build/InterMesh.xcarchive \
+            -archivePath ./build/InterMesh. xcarchive \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath ./build \
             -allowProvisioningUpdates
 
-      - name: Upload IPA Artifact
+      - name:  Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: InterMesh.ipa
-          path: mobile/ios-app/build/InterMesh.ipa
+          path: mobile/ios-app/build/InterMesh. ipa
