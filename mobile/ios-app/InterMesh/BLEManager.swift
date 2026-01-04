@@ -9,6 +9,7 @@
 import Foundation
 import CoreBluetooth
 import Combine
+import UIKit
 
 /// Represents a discovered BLE peer
 struct BLEPeer: Identifiable, Equatable {

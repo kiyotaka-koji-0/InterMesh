@@ -585,11 +585,7 @@ class MeshManager: ObservableObject {
             // Connect
             do {
                 try app.start()
-                var error: NSError?
-                app.connectToNetwork(&error)
-                if let error = error {
-                    throw error
-                }
+                try app.connectToNetwork()
                 isConnected = true
                 statusMessage = "Connected! Searching for peers..."
                 startUpdatingStats()
@@ -626,11 +622,11 @@ class MeshManager: ObservableObject {
         if let error = error {
             errorMessage = error.localizedDescription
             showError = true
-        } else if result.hasPrefix("Error") || result.hasPrefix("error") {
+        } else if let result = result, (result.hasPrefix("Error") || result.hasPrefix("error")) {
             errorMessage = result
             showError = true
         } else {
-            successMessage = result
+            successMessage = result ?? "Connected to proxy"
             showSuccess = true
             statusMessage = "Connected to internet proxy"
         }
