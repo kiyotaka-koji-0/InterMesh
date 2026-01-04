@@ -71,6 +71,7 @@ class BLEManager(private val context: Context) {
     var onMessageReceived: ((String, ByteArray) -> Unit)? = null
     var onError: ((String) -> Unit)? = null
     var onStateChanged: ((Boolean) -> Unit)? = null
+    var onBluetoothRequired: (() -> Unit)? = null  // Callback to request Bluetooth enable
     
     data class BLEPeer(
         val id: String,
@@ -102,12 +103,7 @@ class BLEManager(private val context: Context) {
             return false
         }
         
-        if (!bluetoothAdapter!!.isEnabled) {
-            Log.e(TAG, "Bluetooth is not enabled")
-            onError?.invoke("Please enable Bluetooth")
-            return false
-        }
-        
+        // Don't fail if Bluetooth is off - we'll request it when starting
         bleScanner = bluetoothAdapter?.bluetoothLeScanner
         bleAdvertiser = bluetoothAdapter?.bluetoothLeAdvertiser
         
@@ -115,6 +111,11 @@ class BLEManager(private val context: Context) {
         Log.i(TAG, "BLE Manager initialized successfully")
         return true
     }
+    
+    /**
+     * Check if Bluetooth is enabled
+     */
+    fun isBluetoothEnabled(): Boolean = bluetoothAdapter?.isEnabled == true
     
     /**
      * Start BLE operations (advertising + scanning)
@@ -130,6 +131,17 @@ class BLEManager(private val context: Context) {
             onError?.invoke("Missing Bluetooth permissions")
             return
         }
+        
+        // Check if Bluetooth is enabled, request if not
+        if (!isBluetoothEnabled()) {
+            Log.w(TAG, "Bluetooth is not enabled, requesting...")
+            onBluetoothRequired?.invoke()
+            return
+        }
+        
+        // Refresh scanner/advertiser references in case Bluetooth was just enabled
+        bleScanner = bluetoothAdapter?.bluetoothLeScanner
+        bleAdvertiser = bluetoothAdapter?.bluetoothLeAdvertiser
         
         startGattServer()
         startAdvertising()

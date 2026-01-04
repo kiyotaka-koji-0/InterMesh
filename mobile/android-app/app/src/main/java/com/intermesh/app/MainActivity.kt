@@ -1,6 +1,8 @@
 package com.intermesh.app
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -8,6 +10,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -47,6 +50,22 @@ class MainActivity : AppCompatActivity() {
     // Track discovered P2P peers separately
     private val p2pPeers = mutableMapOf<String, WifiDirectManager.PeerInfo>()
     private val blePeers = mutableMapOf<String, BLEManager.BLEPeer>()
+    
+    // Bluetooth enable request launcher
+    private val bluetoothEnableLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            Log.d(TAG, "Bluetooth enabled by user")
+            // Retry starting BLE now that Bluetooth is enabled
+            if (isBleEnabled && isConnected) {
+                bleManager.start()
+            }
+        } else {
+            Log.w(TAG, "User declined to enable Bluetooth")
+            showMessage("Bluetooth is required for cross-platform connectivity")
+        }
+    }
     
     companion object {
         private const val TAG = "InterMesh"
@@ -296,6 +315,15 @@ class MainActivity : AppCompatActivity() {
             }
             
             isBleEnabled = true
+            
+            // Set up callback to request Bluetooth enable
+            bleManager.onBluetoothRequired = {
+                mainHandler.post {
+                    Log.d(TAG, "Requesting user to enable Bluetooth")
+                    val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                    bluetoothEnableLauncher.launch(enableBtIntent)
+                }
+            }
             
             // Set up BLE callbacks
             bleManager.onPeerDiscovered = { peer ->

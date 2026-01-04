@@ -8,7 +8,7 @@
 8        android:minSdkVersion="24"
 9        android:targetSdkVersion="34" />
 10
-11    <!-- Permissions for mesh networking -->
+11    <!-- Permissions for mesh networking and WiFi Direct -->
 12    <uses-permission android:name="android.permission.INTERNET" />
 12-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:5:5-67
 12-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:5:22-64
@@ -31,146 +31,171 @@
 18-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:11:5-81
 18-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:11:22-78
 19
-20    <!-- WiFi Direct / P2P permissions -->
-21    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-21-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:6:5-76
-21-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:6:22-73
-22    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-22-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:7:5-76
-22-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:7:22-73
-23
-24    <!-- For Android 12+ (API 31+) -->
-25    <uses-permission
-25-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:5-19:58
-26        android:name="android.permission.NEARBY_WIFI_DEVICES"
-26-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:22-75
-27        android:usesPermissionFlags="neverForLocation" />
-27-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:19:9-55
-28
-29    <!-- Required for WiFi Direct on Android 13+ -->
-30    <uses-feature
-30-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:22:5-90
-31        android:name="android.hardware.wifi.direct"
-31-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:22:19-62
-32        android:required="false" />
-32-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:22:63-87
-33
-34    <permission
-34-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
-35        android:name="com.intermesh.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-35-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
-36        android:protectionLevel="signature" />
-36-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
-37
-38    <uses-permission android:name="com.intermesh.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-38-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
-38-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
-39
-40    <application
-40-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:24:5-41:19
-41        android:allowBackup="true"
-41-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:25:9-35
-42        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-42-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
-43        android:debuggable="true"
-44        android:extractNativeLibs="false"
-45        android:icon="@mipmap/ic_launcher"
-45-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:26:9-43
-46        android:label="@string/app_name"
-46-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:27:9-41
-47        android:roundIcon="@mipmap/ic_launcher_round"
-47-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:9-54
-48        android:supportsRtl="true"
-48-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:29:9-35
-49        android:theme="@style/Theme.InterMesh"
-49-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:31:9-47
-50        android:usesCleartextTraffic="true" >
-50-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:9-44
-51        <activity
-51-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:32:9-40:20
-52            android:name="com.intermesh.app.MainActivity"
-52-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:33:13-41
-53            android:exported="true"
-53-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:34:13-36
-54            android:screenOrientation="portrait" >
-54-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:35:13-49
-55            <intent-filter>
-55-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:36:13-39:29
-56                <action android:name="android.intent.action.MAIN" />
-56-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:37:17-69
-56-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:37:25-66
-57
-58                <category android:name="android.intent.category.LAUNCHER" />
-58-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:38:17-77
-58-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:38:27-74
-59            </intent-filter>
-60        </activity>
-61
-62        <provider
-62-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
-63            android:name="androidx.startup.InitializationProvider"
-63-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:25:13-67
-64            android:authorities="com.intermesh.app.androidx-startup"
-64-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:26:13-68
-65            android:exported="false" >
-65-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:27:13-37
-66            <meta-data
-66-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
-67                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-67-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:30:17-75
-68                android:value="androidx.startup" />
-68-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:31:17-49
-69            <meta-data
-69-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/kiyotaka/.gradle/caches/transforms-3/16752b9ed4b7193c365fade38f2623dc/transformed/jetified-lifecycle-process-2.6.1/AndroidManifest.xml:29:13-31:52
-70                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-70-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/kiyotaka/.gradle/caches/transforms-3/16752b9ed4b7193c365fade38f2623dc/transformed/jetified-lifecycle-process-2.6.1/AndroidManifest.xml:30:17-78
-71                android:value="androidx.startup" />
-71-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/kiyotaka/.gradle/caches/transforms-3/16752b9ed4b7193c365fade38f2623dc/transformed/jetified-lifecycle-process-2.6.1/AndroidManifest.xml:31:17-49
-72            <meta-data
-72-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
-73                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-73-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:30:17-85
-74                android:value="androidx.startup" />
-74-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:31:17-49
-75        </provider>
-76
-77        <receiver
-77-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:34:9-52:20
-78            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-78-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:35:13-76
-79            android:directBootAware="false"
-79-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:36:13-44
-80            android:enabled="true"
-80-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:37:13-35
-81            android:exported="true"
-81-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:38:13-36
-82            android:permission="android.permission.DUMP" >
-82-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:39:13-57
-83            <intent-filter>
-83-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:40:13-42:29
-84                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-84-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:17-91
-84-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:25-88
-85            </intent-filter>
-86            <intent-filter>
-86-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:43:13-45:29
-87                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-87-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:17-85
-87-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:25-82
-88            </intent-filter>
-89            <intent-filter>
-89-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:46:13-48:29
-90                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-90-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:17-88
-90-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:25-85
-91            </intent-filter>
-92            <intent-filter>
-92-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:49:13-51:29
-93                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-93-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:17-95
-93-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:25-92
-94            </intent-filter>
-95        </receiver>
-96    </application>
-97
-98</manifest>
+20    <!-- For Android 12+ (API 31+) WiFi Direct -->
+21    <uses-permission
+21-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:14:5-15:58
+22        android:name="android.permission.NEARBY_WIFI_DEVICES"
+22-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:14:22-75
+23        android:usesPermissionFlags="neverForLocation" />
+23-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:15:9-55
+24
+25    <!-- Bluetooth permissions for BLE cross-platform connectivity -->
+26    <uses-permission
+26-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:5-95
+27        android:name="android.permission.BLUETOOTH"
+27-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:22-65
+28        android:maxSdkVersion="30" />
+28-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:66-92
+29    <uses-permission
+29-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:19:5-101
+30        android:name="android.permission.BLUETOOTH_ADMIN"
+30-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:19:22-71
+31        android:maxSdkVersion="30" />
+31-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:19:72-98
+32    <!-- For Android 12+ (API 31+) Bluetooth -->
+33    <uses-permission
+33-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:21:5-22:58
+34        android:name="android.permission.BLUETOOTH_SCAN"
+34-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:21:22-70
+35        android:usesPermissionFlags="neverForLocation" />
+35-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:22:9-55
+36    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+36-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:23:5-78
+36-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:23:22-75
+37    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+37-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:24:5-76
+37-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:24:22-73
+38
+39    <!-- Hardware features (optional) -->
+40    <uses-feature
+40-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:27:5-90
+41        android:name="android.hardware.wifi.direct"
+41-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:27:19-62
+42        android:required="false" />
+42-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:27:63-87
+43    <uses-feature
+43-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:5-91
+44        android:name="android.hardware.bluetooth_le"
+44-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:19-63
+45        android:required="false" />
+45-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:64-88
+46
+47    <permission
+47-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+48        android:name="com.intermesh.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+48-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+49        android:protectionLevel="signature" />
+49-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+50
+51    <uses-permission android:name="com.intermesh.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+51-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+51-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+52
+53    <application
+53-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:5-47:19
+54        android:allowBackup="true"
+54-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:31:9-35
+55        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+55-->[androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+56        android:debuggable="true"
+57        android:extractNativeLibs="false"
+58        android:icon="@mipmap/ic_launcher"
+58-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:32:9-43
+59        android:label="@string/app_name"
+59-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:33:9-41
+60        android:roundIcon="@mipmap/ic_launcher_round"
+60-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:34:9-54
+61        android:supportsRtl="true"
+61-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:35:9-35
+62        android:theme="@style/Theme.InterMesh"
+62-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:37:9-47
+63        android:usesCleartextTraffic="true" >
+63-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:36:9-44
+64        <activity
+64-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:38:9-46:20
+65            android:name="com.intermesh.app.MainActivity"
+65-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:39:13-41
+66            android:exported="true"
+66-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:40:13-36
+67            android:screenOrientation="portrait" >
+67-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:41:13-49
+68            <intent-filter>
+68-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:42:13-45:29
+69                <action android:name="android.intent.action.MAIN" />
+69-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:43:17-69
+69-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:43:25-66
+70
+71                <category android:name="android.intent.category.LAUNCHER" />
+71-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:44:17-77
+71-->/home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:44:27-74
+72            </intent-filter>
+73        </activity>
+74
+75        <provider
+75-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+76            android:name="androidx.startup.InitializationProvider"
+76-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:25:13-67
+77            android:authorities="com.intermesh.app.androidx-startup"
+77-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:26:13-68
+78            android:exported="false" >
+78-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:27:13-37
+79            <meta-data
+79-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+80                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+80-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:30:17-75
+81                android:value="androidx.startup" />
+81-->[androidx.emoji2:emoji2:1.2.0] /home/kiyotaka/.gradle/caches/transforms-3/7dc88315e6b2fe12779a7d7bdabb4cbe/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:31:17-49
+82            <meta-data
+82-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/kiyotaka/.gradle/caches/transforms-3/16752b9ed4b7193c365fade38f2623dc/transformed/jetified-lifecycle-process-2.6.1/AndroidManifest.xml:29:13-31:52
+83                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+83-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/kiyotaka/.gradle/caches/transforms-3/16752b9ed4b7193c365fade38f2623dc/transformed/jetified-lifecycle-process-2.6.1/AndroidManifest.xml:30:17-78
+84                android:value="androidx.startup" />
+84-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/kiyotaka/.gradle/caches/transforms-3/16752b9ed4b7193c365fade38f2623dc/transformed/jetified-lifecycle-process-2.6.1/AndroidManifest.xml:31:17-49
+85            <meta-data
+85-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
+86                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:30:17-85
+87                android:value="androidx.startup" />
+87-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:31:17-49
+88        </provider>
+89
+90        <receiver
+90-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:34:9-52:20
+91            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+91-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:35:13-76
+92            android:directBootAware="false"
+92-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:36:13-44
+93            android:enabled="true"
+93-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:37:13-35
+94            android:exported="true"
+94-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:38:13-36
+95            android:permission="android.permission.DUMP" >
+95-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:39:13-57
+96            <intent-filter>
+96-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:40:13-42:29
+97                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+97-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:17-91
+97-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:25-88
+98            </intent-filter>
+99            <intent-filter>
+99-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:43:13-45:29
+100                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+100-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:17-85
+100-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:25-82
+101            </intent-filter>
+102            <intent-filter>
+102-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:46:13-48:29
+103                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:17-88
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:25-85
+104            </intent-filter>
+105            <intent-filter>
+105-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:49:13-51:29
+106                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:17-95
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/kiyotaka/.gradle/caches/transforms-3/c90fb32a7195c171e69cd33f0db3b29f/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:25-92
+107            </intent-filter>
+108        </receiver>
+109    </application>
+110
+111</manifest>

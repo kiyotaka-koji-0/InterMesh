@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-43:12
-INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-43:12
-INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-43:12
-INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-43:12
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
+INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
+INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
+INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
 MERGED from [intermesh.aar] /home/kiyotaka/.gradle/caches/transforms-3/e6f8dd07f1ef32e8434452f4e98ec55d/transformed/jetified-intermesh/AndroidManifest.xml:1:1-2:50
 MERGED from [androidx.databinding:viewbinding:8.1.0] /home/kiyotaka/.gradle/caches/transforms-3/2f5af214b2286cb14322f1c131676295/transformed/jetified-viewbinding-8.1.0/AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.material:material:1.11.0] /home/kiyotaka/.gradle/caches/transforms-3/bde88e4960446673983d90ab76a41daa/transformed/material-1.11.0/AndroidManifest.xml:17:1-24:12
@@ -84,20 +84,52 @@ ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/ap
 	android:name
 		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:11:22-78
 uses-permission#android.permission.NEARBY_WIFI_DEVICES
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:5-19:58
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:14:5-15:58
 	android:usesPermissionFlags
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:19:9-55
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:15:9-55
 	android:name
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:22-75
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:14:22-75
+uses-permission#android.permission.BLUETOOTH
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:5-95
+	android:maxSdkVersion
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:66-92
+	android:name
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:18:22-65
+uses-permission#android.permission.BLUETOOTH_ADMIN
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:19:5-101
+	android:maxSdkVersion
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:19:72-98
+	android:name
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:19:22-71
+uses-permission#android.permission.BLUETOOTH_SCAN
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:21:5-22:58
+	android:usesPermissionFlags
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:22:9-55
+	android:name
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:21:22-70
+uses-permission#android.permission.BLUETOOTH_ADVERTISE
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:23:5-78
+	android:name
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:23:22-75
+uses-permission#android.permission.BLUETOOTH_CONNECT
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:24:5-76
+	android:name
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:24:22-73
 uses-feature#android.hardware.wifi.direct
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:22:5-90
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:27:5-90
 	android:required
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:22:63-87
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:27:63-87
 	android:name
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:22:19-62
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:27:19-62
+uses-feature#android.hardware.bluetooth_le
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:5-91
+	android:required
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:64-88
+	android:name
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:19-63
 application
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:24:5-41:19
-INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:24:5-41:19
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:5-47:19
+INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:5-47:19
 MERGED from [com.google.android.material:material:1.11.0] /home/kiyotaka/.gradle/caches/transforms-3/bde88e4960446673983d90ab76a41daa/transformed/material-1.11.0/AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.11.0] /home/kiyotaka/.gradle/caches/transforms-3/bde88e4960446673983d90ab76a41daa/transformed/material-1.11.0/AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /home/kiyotaka/.gradle/caches/transforms-3/6b9bd06b7ef1dcce4c57fb6f7e07c444/transformed/constraintlayout-2.1.4/AndroidManifest.xml:9:5-20
@@ -119,37 +151,37 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /home/kiyotaka/.gradle/cach
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.12.0] /home/kiyotaka/.gradle/caches/transforms-3/82a8a622f6403332431d1e5f0d1a9ad3/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:29:9-35
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:35:9-35
 	android:label
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:27:9-41
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:33:9-41
 	android:roundIcon
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:9-54
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:34:9-54
 	android:icon
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:26:9-43
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:32:9-43
 	android:allowBackup
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:25:9-35
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:31:9-35
 	android:theme
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:31:9-47
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:37:9-47
 	android:usesCleartextTraffic
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:9-44
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:36:9-44
 activity#com.intermesh.app.MainActivity
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:32:9-40:20
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:38:9-46:20
 	android:screenOrientation
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:35:13-49
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:41:13-49
 	android:exported
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:34:13-36
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:40:13-36
 	android:name
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:33:13-41
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:39:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:36:13-39:29
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:42:13-45:29
 action#android.intent.action.MAIN
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:37:17-69
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:43:17-69
 	android:name
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:37:25-66
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:43:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:38:17-77
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:44:17-77
 	android:name
-		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:38:27-74
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:44:27-74
 uses-sdk
 INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml

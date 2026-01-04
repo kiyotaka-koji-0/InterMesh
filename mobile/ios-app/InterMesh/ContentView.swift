@@ -377,7 +377,11 @@ struct ContentView: View {
         }
         
         bleManager.onError = { error in
-            meshManager.errorMessage = error
+            if error.contains("powered off") {
+                meshManager.errorMessage = "Please enable Bluetooth in Settings to connect with Android devices"
+            } else {
+                meshManager.errorMessage = error
+            }
             meshManager.showError = true
         }
     }
