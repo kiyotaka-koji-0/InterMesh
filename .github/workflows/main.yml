@@ -1,137 +1,131 @@
 name: Build iOS App
 
-on:    
-  push: 
-    branches:  
+on:
+  push:
+    branches:
       - main
-  pull_request: 
-    branches:   
+  pull_request:
+    branches:
       - main
+  workflow_dispatch:
 
-jobs:   
-  build-ios: 
-    name:    Build iOS App
-    runs-on:  macos-latest
+jobs:
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-14
 
-    steps:    
+    env:
+      GOPATH: ${{ github.workspace }}/go
+      GOBIN: ${{ github.workspace }}/go/bin
+
+    steps:
       - name: Checkout Repository
-        uses:   actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name:  Set up Go
-        uses: actions/setup-go@v4
-        with:  
-          go-version: '1.21'
-          check-latest: true
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
 
-      - name:   Verify Go Version
-        run: go version
-
-      - name:  Install and setup gomobile
+      - name: Verify Go Version
         run: |
-          # Install gomobile and gobind
-          go install golang. org/x/mobile/cmd/gomobile@latest
-          go install golang.org/x/mobile/cmd/gobind@latest
-          
-          # Manually download the mobile package
-          go get golang.org/x/mobile/bind
-          go get golang.org/x/mobile/bind/objc
-          
-          # Initialize gomobile with NDK path
-          gomobile init
-          
-          # Verify the bind package exists
-          ls -la ~/go/pkg/mod/golang.org/x/mobile* || echo "Mobile package not in expected location"
-          
-          # Test gomobile
-          gomobile version
+          go version
+          echo "GOPATH: $GOPATH"
+          echo "GOBIN: $GOBIN"
 
       - name: Cache Go Modules
-        uses: actions/cache@v3
-        with:      
-          path:  |
+        uses: actions/cache@v4
+        with:
+          path: |
             ~/go/pkg/mod
-            ~/. gomobile
-          key: ${{ runner.os }}-go-gomobile-${{ hashFiles('**/go.sum') }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-gomobile-
+            ${{ runner.os }}-go-
 
-      - name:  Tidy Go modules in mobile directory
-        working-directory: mobile
-        run:   |
-          # Ensure mobile package is available
-          go get golang.org/x/mobile/bind
-          go mod tidy
+      - name: Download Go Dependencies
+        run: |
           go mod download
-          go mod verify
+          go mod tidy
 
-      - name: Build iOS Framework
+      - name: Install gomobile
         run: |
-          mkdir -p mobile/output
-          cd mobile
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
           
-          # Set GOPATH explicitly
-          export GOPATH=$HOME/go
-          export PATH=$GOPATH/bin:$PATH
+          export PATH="$GOBIN:$PATH"
+          echo "$GOBIN" >> $GITHUB_PATH
           
-          # Build with verbose output
-          gomobile bind -v -x -target=ios -o output/Intermesh.xcframework . 
-
-      - name: Verify Framework Location
-        run: |
-          echo "Checking framework location:"
-          ls -la mobile/output/
-          if [ -d "mobile/output/Intermesh.xcframework" ]; then
-            echo "Framework contents:"
-            ls -la mobile/output/Intermesh.xcframework/
-          else
-            echo "Error: Framework not created!"
-            exit 1
-          fi
+          gomobile init
+          gomobile version
 
       - name: Set up Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode. app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
+          sudo xcodebuild -license accept || true
+
+      - name: Build iOS Framework
+        run: |
+          export PATH="$GOBIN:$PATH"
+          mkdir -p mobile/output
+          
+          gomobile bind -target=ios -o mobile/output/Intermesh.xcframework -iosversion=14.0 ./mobile
+          
+          ls -la mobile/output/
+          
+          if [ -d "mobile/output/Intermesh.xcframework" ]; then
+            echo "Framework built successfully"
+          else
+            echo "Framework build failed"
+            exit 1
+          fi
+
+      - name: Copy Framework to iOS App
+        run: |
+          cp -r mobile/output/Intermesh.xcframework mobile/ios-app/
+          ls -la mobile/ios-app/
 
       - name: Build iOS App
         working-directory: mobile/ios-app
         run: |
-          xcodebuild -scheme InterMesh \
-            -sdk iphoneos \
-            -configuration Release \
-            -derivedDataPath ./build/DerivedData \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+          if [ -f "InterMesh.xcworkspace/contents.xcworkspacedata" ]; then
+            WORKSPACE_FLAG="-workspace InterMesh.xcworkspace"
+          else
+            WORKSPACE_FLAG="-project InterMesh.xcodeproj"
+          fi
+          
+          xcodebuild $WORKSPACE_FLAG -scheme InterMesh -sdk iphoneos -configuration Release -derivedDataPath ./build/DerivedData -arch arm64 CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO build
 
       - name: Create IPA
         working-directory: mobile/ios-app
-        run:  |
-          # Find the . app bundle
-          APP_PATH=$(find ./build/DerivedData/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
-          
-          echo "Found app at: $APP_PATH"
+        run: |
+          APP_PATH=$(find ./build/DerivedData/Build/Products/Release-iphoneos -name "*.app" -type d | head -n 1)
           
           if [ -z "$APP_PATH" ]; then
-            echo "Error: No .app bundle found!"
+            echo "No .app bundle found!"
             exit 1
           fi
           
-          # Create Payload directory
           mkdir -p ./build/Payload
-          
-          # Copy .app to Payload
           cp -r "$APP_PATH" ./build/Payload/
           
-          # Create IPA (it's just a zip file)
           cd ./build
           zip -r InterMesh.ipa Payload
           
-          echo "IPA created successfully!"
-          ls -lh InterMesh.ipa
+          ls -la InterMesh.ipa
 
-      - name: Upload IPA for Sideloadly
-        uses:   actions/upload-artifact@v4
-        with:   
-          name: InterMesh-Sideloadly
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterMesh-iOS
           path: mobile/ios-app/build/InterMesh.ipa
+          retention-days: 30
+
+      - name: Upload Framework Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Intermesh-Framework
+          path: mobile/output/Intermesh.xcframework
+          retention-days: 30
