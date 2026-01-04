@@ -404,10 +404,9 @@ struct ContentView: View {
                             }
                                 
                             // Send response back via BLE
-                            if let response = responseJSON,
-                               let responseData = response.data(using: .utf8),
+                            if let responseData = responseJSON.data(using: .utf8),
                                let peer = bleManager.connectedPeers.first(where: { $0.id == from }) {
-                                bleManager.sendData(responseData, to: peer.identifier)
+                                _ = bleManager.sendData(responseData, to: peer.identifier)
                                 print("Sent proxy response to \(from)")
                             }
                         }
@@ -793,7 +792,7 @@ class MeshManager: ObservableObject {
                 return
             }
             
-            guard let json = requestJSON, let requestData = json.data(using: .utf8) else {
+            guard let requestData = requestJSON.data(using: .utf8) else {
                 DispatchQueue.main.async {
                     self.errorMessage = "Failed to encode proxy request"
                 }
