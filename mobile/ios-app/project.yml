@@ -7,7 +7,7 @@ targets:
   InterMesh:
     type: application
     platform: iOS
-    deploymentTarget: "14.0"
+    deploymentTarget: "16.0"
     sources: 
       - path: InterMesh
     settings:
@@ -24,7 +24,7 @@ targets:
   InterMeshPacketTunnel:
     type: app-extension
     platform: iOS
-    deploymentTarget: "14.0"
+    deploymentTarget: "16.0"
     sources: 
       - path: InterMeshPacketTunnel
     settings:

@@ -109,8 +109,8 @@ jobs:
       - name: Build iOS App and Extension
         working-directory: mobile/ios-app
         run: |
-          # Use the selected Xcode 16.0 to build the project
-          xcodebuild -project InterMesh.xcodeproj -scheme InterMesh -sdk iphoneos -configuration Release -derivedDataPath ./build/DerivedData -arch arm64 CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO build
+          # Use the selected Xcode 16.2 to build the project
+          xcodebuild -project InterMesh.xcodeproj -scheme InterMesh -sdk iphoneos -configuration Release -derivedDataPath ./build/DerivedData -arch arm64 CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGN_ALLOWED=NO ONLY_ACTIVE_ARCH=NO build
 
       - name: Create IPA
         working-directory: mobile/ios-app
