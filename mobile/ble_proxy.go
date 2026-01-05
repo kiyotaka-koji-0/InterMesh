@@ -65,20 +65,75 @@ func (h *BLEProxyHandler) SetBLEMessageSender(sender func(peerID string, message
 
 // HandleProxyRequest handles an incoming proxy request from a BLE peer
 func (h *BLEProxyHandler) HandleProxyRequest(clientID string, request *ProxyRequest) error {
-	// Only handle if we have internet
-	if !h.mobileApp.HasInternet() {
-		return fmt.Errorf("no internet access available")
+	// 1. Try local internet first
+	if h.mobileApp.HasInternet() {
+		// Store the request
+		h.requestsMu.Lock()
+		h.activeRequests[request.RequestID] = request
+		h.requestsMu.Unlock()
+
+		// Make the HTTP request
+		go h.executeProxyRequest(clientID, request)
+		return nil
 	}
 
-	// Store the request
-	h.requestsMu.Lock()
-	h.activeRequests[request.RequestID] = request
-	h.requestsMu.Unlock()
+	// 2. If no local internet, try to relay through the mesh internet client
+	if h.mobileApp.app.InternetClient.IsConnected() {
+		go h.relayToMesh(clientID, request)
+		return nil
+	}
 
-	// Make the HTTP request
-	go h.executeProxyRequest(clientID, request)
+	return fmt.Errorf("no internet access or mesh proxy available")
+}
 
-	return nil
+// relayToMesh forwards a BLE proxy request to the Mesh's internet proxy
+func (h *BLEProxyHandler) relayToMesh(clientID string, request *ProxyRequest) {
+	// Create HTTP request for the mesh internet client
+	var bodyReader io.Reader
+	if len(request.Body) > 0 {
+		bodyReader = bytes.NewReader(request.Body)
+	}
+
+	httpReq, err := http.NewRequest(request.Method, request.URL, bodyReader)
+	if err != nil {
+		h.sendErrorResponse(clientID, request.RequestID, fmt.Sprintf("Invalid bridged request: %v", err))
+		return
+	}
+
+	// Add headers
+	for key, value := range request.Headers {
+		httpReq.Header.Set(key, value)
+	}
+
+	// Send through Mesh InternetClient
+	resp, err := h.mobileApp.app.InternetClient.DoRequest(httpReq)
+	if err != nil {
+		h.sendErrorResponse(clientID, request.RequestID, fmt.Sprintf("Mesh relay failed: %v", err))
+		return
+	}
+	defer resp.Body.Close()
+
+	// Handle response similar to executeProxyRequest
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		h.sendErrorResponse(clientID, request.RequestID, fmt.Sprintf("Failed to read mesh response: %v", err))
+		return
+	}
+
+	response := &ProxyResponse{
+		RequestID:  request.RequestID,
+		StatusCode: resp.StatusCode,
+		Headers:    make(map[string]string),
+		Body:       body,
+	}
+
+	for key, values := range resp.Header {
+		if len(values) > 0 {
+			response.Headers[key] = values[0]
+		}
+	}
+
+	h.sendProxyResponse(clientID, response)
 }
 
 // executeProxyRequest executes an HTTP request and sends response back through BLE

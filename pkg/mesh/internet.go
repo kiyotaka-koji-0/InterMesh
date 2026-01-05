@@ -309,6 +309,19 @@ func (c *InternetClient) MakeRequest(url string) (*http.Response, error) {
 	return client.Get(url)
 }
 
+// DoRequest makes a generic HTTP request through the proxy
+func (c *InternetClient) DoRequest(req *http.Request) (*http.Response, error) {
+	c.mu.Lock()
+	if !c.connected || c.client == nil {
+		c.mu.Unlock()
+		return nil, fmt.Errorf("not connected to proxy")
+	}
+	client := c.client
+	c.mu.Unlock()
+
+	return client.Do(req)
+}
+
 // CheckInternetConnectivity tests internet connectivity
 func CheckInternetConnectivity() bool {
 	// Try to connect to common DNS servers

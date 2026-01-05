@@ -12,6 +12,10 @@ id deviceIdText
 id messageText
 id peersCountText
 id proxiesCountText
+id proxyButton
+id proxyCard
+id proxyInstructions
+id proxyStatusText
 id requestInternetButton
 id sharingCard
 id sharingSwitch

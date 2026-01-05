@@ -3441,6 +3441,10 @@ id pressed
 id progress_circular
 id progress_horizontal
 id proxiesCountText
+id proxyButton
+id proxyCard
+id proxyInstructions
+id proxyStatusText
 id radio
 id ratio
 id rectangles

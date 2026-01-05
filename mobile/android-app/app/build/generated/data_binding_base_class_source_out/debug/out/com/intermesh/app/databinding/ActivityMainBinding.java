@@ -38,6 +38,18 @@ public final class ActivityMainBinding implements ViewBinding {
   public final TextView proxiesCountText;
 
   @NonNull
+  public final MaterialButton proxyButton;
+
+  @NonNull
+  public final MaterialCardView proxyCard;
+
+  @NonNull
+  public final TextView proxyInstructions;
+
+  @NonNull
+  public final TextView proxyStatusText;
+
+  @NonNull
   public final MaterialButton requestInternetButton;
 
   @NonNull
@@ -64,7 +76,9 @@ public final class ActivityMainBinding implements ViewBinding {
   private ActivityMainBinding(@NonNull ConstraintLayout rootView,
       @NonNull MaterialButton connectButton, @NonNull TextView deviceIdText,
       @NonNull TextView messageText, @NonNull TextView peersCountText,
-      @NonNull TextView proxiesCountText, @NonNull MaterialButton requestInternetButton,
+      @NonNull TextView proxiesCountText, @NonNull MaterialButton proxyButton,
+      @NonNull MaterialCardView proxyCard, @NonNull TextView proxyInstructions,
+      @NonNull TextView proxyStatusText, @NonNull MaterialButton requestInternetButton,
       @NonNull MaterialCardView sharingCard, @NonNull SwitchMaterial sharingSwitch,
       @NonNull MaterialCardView statsCard, @NonNull MaterialCardView statusCard,
       @NonNull TextView statusLabel, @NonNull TextView statusText, @NonNull TextView titleText) {
@@ -74,6 +88,10 @@ public final class ActivityMainBinding implements ViewBinding {
     this.messageText = messageText;
     this.peersCountText = peersCountText;
     this.proxiesCountText = proxiesCountText;
+    this.proxyButton = proxyButton;
+    this.proxyCard = proxyCard;
+    this.proxyInstructions = proxyInstructions;
+    this.proxyStatusText = proxyStatusText;
     this.requestInternetButton = requestInternetButton;
     this.sharingCard = sharingCard;
     this.sharingSwitch = sharingSwitch;
@@ -141,6 +159,30 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.proxyButton;
+      MaterialButton proxyButton = ViewBindings.findChildViewById(rootView, id);
+      if (proxyButton == null) {
+        break missingId;
+      }
+
+      id = R.id.proxyCard;
+      MaterialCardView proxyCard = ViewBindings.findChildViewById(rootView, id);
+      if (proxyCard == null) {
+        break missingId;
+      }
+
+      id = R.id.proxyInstructions;
+      TextView proxyInstructions = ViewBindings.findChildViewById(rootView, id);
+      if (proxyInstructions == null) {
+        break missingId;
+      }
+
+      id = R.id.proxyStatusText;
+      TextView proxyStatusText = ViewBindings.findChildViewById(rootView, id);
+      if (proxyStatusText == null) {
+        break missingId;
+      }
+
       id = R.id.requestInternetButton;
       MaterialButton requestInternetButton = ViewBindings.findChildViewById(rootView, id);
       if (requestInternetButton == null) {
@@ -190,8 +232,9 @@ public final class ActivityMainBinding implements ViewBinding {
       }
 
       return new ActivityMainBinding((ConstraintLayout) rootView, connectButton, deviceIdText,
-          messageText, peersCountText, proxiesCountText, requestInternetButton, sharingCard,
-          sharingSwitch, statsCard, statusCard, statusLabel, statusText, titleText);
+          messageText, peersCountText, proxiesCountText, proxyButton, proxyCard, proxyInstructions,
+          proxyStatusText, requestInternetButton, sharingCard, sharingSwitch, statsCard, statusCard,
+          statusLabel, statusText, titleText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

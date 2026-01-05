@@ -229,6 +229,61 @@ struct ContentView: View {
                         .disabled(!meshManager.isConnected && multipeerManager.connectedPeers.isEmpty && bleManager.connectedPeers.isEmpty)
                         .opacity((meshManager.isConnected || !multipeerManager.connectedPeers.isEmpty || !bleManager.connectedPeers.isEmpty) ? 1.0 : 0.5)
                         
+                        // HTTP Proxy Section
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Image(systemName: "network")
+                                    .foregroundColor(.orange)
+                                Text("HTTP Proxy")
+                                    .font(.headline)
+                                Spacer()
+                                Circle()
+                                    .fill(meshManager.isHTTPProxyRunning ? Color.green : Color.gray)
+                                    .frame(width: 10, height: 10)
+                            }
+                            
+                            Text(meshManager.isHTTPProxyRunning 
+                                ? "Running on 127.0.0.1:\(meshManager.httpProxyPort)" 
+                                : "Not running")
+                                .font(.caption)
+                                .foregroundColor(meshManager.isHTTPProxyRunning ? .green : .gray)
+                            
+                            Button(action: {
+                                meshManager.toggleHTTPProxy(bleManager: bleManager)
+                            }) {
+                                HStack {
+                                    Image(systemName: meshManager.isHTTPProxyRunning ? "stop.fill" : "play.fill")
+                                    Text(meshManager.isHTTPProxyRunning ? "Stop Proxy" : "Start Proxy")
+                                        .fontWeight(.semibold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(meshManager.isHTTPProxyRunning ? Color.red : Color.orange)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                            }
+                            .disabled(bleManager.connectedPeers.isEmpty)
+                            .opacity(bleManager.connectedPeers.isEmpty ? 0.5 : 1.0)
+                            
+                            if meshManager.isHTTPProxyRunning {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("To use:")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                    Text("Settings → Wi-Fi → Configure Proxy")
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                    Text("Server: 127.0.0.1  Port: \(meshManager.httpProxyPort)")
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.top, 4)
+                            }
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
                         // Send Test Message (for P2P testing)
                         if !multipeerManager.connectedPeers.isEmpty || !bleManager.connectedPeers.isEmpty {
                             Button(action: {
@@ -359,7 +414,7 @@ struct ContentView: View {
     private func setupBLECallbacks() {
         // Set up internet status callback
         bleManager.getInternetStatus = {
-            return meshManager.mobileApp?.hasInternet() ?? false
+            return meshManager.mobileApp?.hasAnyInternet() ?? false
         }
         
         bleManager.onPeerDiscovered = { peer in
@@ -389,17 +444,17 @@ struct ContentView: View {
         
         bleManager.onMessageReceived = { from, data in
             if let message = String(data: data, encoding: .utf8) {
-                // Check if this is a proxy request (from device without internet)
-                if message.contains("\"type\":\"request\"") && message.contains("\"url\"") {
-                    // This device has internet - execute the proxy request
-                    if let app = meshManager.mobileApp, app.hasInternet() {
+                // Check if this is an HTTP tunnel request (from device using proxy)
+                if message.contains("\"method\"") && message.contains("\"url\"") && message.contains("\"id\"") {
+                    // This device has internet - execute the tunnel request
+                if let app = meshManager.mobileApp, app.hasAnyInternet() {
                         DispatchQueue.global(qos: .userInitiated).async {
-                            // Execute the HTTP request
+                            // Execute the HTTP tunnel request
                             var execError: NSError?
-                            let responseJSON = app.executeProxyRequest(message, error: &execError)
+                            let responseJSON = app.executeTunnelRequest(message, error: &execError)
                             
                             if let error = execError {
-                                print("Failed to execute proxy request: \(error)")
+                                print("Failed to execute tunnel request: \(error)")
                                 return
                             }
                                 
@@ -407,18 +462,20 @@ struct ContentView: View {
                             if let responseData = responseJSON.data(using: .utf8),
                                let peer = bleManager.connectedPeers.first(where: { $0.id == from }) {
                                 _ = bleManager.sendData(responseData, to: peer.identifier)
-                                print("Sent proxy response to \(from)")
+                                print("Sent tunnel response to \(from)")
                             }
                         }
                     }
                 }
-                // Check if this is a proxy response (from device with internet)
-                else if message.contains("\"type\":\"response\"") || message.contains("\"status_code\"") {
-                    // Parse the response and update UI
+                // Check if this is a tunnel response (from device with internet)
+                else if message.contains("\"status_code\"") && message.contains("\"id\"") {
+                    // Forward to HTTP proxy handler
                     if let app = meshManager.mobileApp {
-                        let body = app.parseProxyResponseBody(message)
-                        DispatchQueue.main.async {
-                            meshManager.statusMessage = "Internet response: \(body.prefix(200))"
+                        do {
+                            try app.handleTunnelResponse(message)
+                            print("Handled tunnel response")
+                        } catch {
+                            print("Failed to handle tunnel response: \(error)")
                         }
                     }
                 }
@@ -609,6 +666,8 @@ class MeshManager: ObservableObject {
     @Published var errorMessage: String = ""
     @Published var showSuccess: Bool = false
     @Published var successMessage: String = ""
+    @Published var isHTTPProxyRunning = false
+    @Published var httpProxyPort: Int = 8080
     
     var mobileApp: IntermeshMobileApp?  // Expose as public property
     private var statsTimer: Timer?
@@ -692,6 +751,35 @@ class MeshManager: ObservableObject {
             successMessage = result
             showSuccess = true
             statusMessage = "Connected to internet proxy"
+        }
+    }
+    
+    func toggleHTTPProxy(bleManager: BLEManager) {
+        guard let app = mobileApp else {
+            errorMessage = "Mobile app not initialized"
+            showError = true
+            return
+        }
+        
+        if isHTTPProxyRunning {
+            // Stop the proxy
+            app.stopHTTPProxy()
+            isHTTPProxyRunning = false
+            statusMessage = "HTTP Proxy stopped"
+        } else {
+            // Set up the BLE message sender before starting proxy
+            let callback = BLEMessageSender(bleManager: bleManager)
+            app.setSimpleBLEMessageSender(callback)
+            
+            // Start the proxy
+            do {
+                try app.startHTTPProxy(Int64(httpProxyPort))
+                isHTTPProxyRunning = true
+                statusMessage = "HTTP Proxy running on port \(httpProxyPort)"
+            } catch {
+                errorMessage = "Failed to start HTTP proxy: \(error.localizedDescription)"
+                showError = true
+            }
         }
     }
     
@@ -810,6 +898,31 @@ class MeshManager: ObservableObject {
                 }
             }
         }
+    }
+}
+
+// BLEMessageSender implements IntermeshBLEMessageCallback for sending messages via BLE
+class BLEMessageSender: NSObject, IntermeshBLEMessageCallbackProtocol {
+    private weak var bleManager: BLEManager?
+    
+    init(bleManager: BLEManager) {
+        self.bleManager = bleManager
+        super.init()
+    }
+    
+    func sendMessage(_ message: String?) -> Bool {
+        guard let manager = bleManager, let msg = message else { return false }
+        guard let data = msg.data(using: .utf8) else { return false }
+        
+        // Send to first connected BLE peer with internet
+        if let peer = manager.connectedPeers.first(where: { $0.hasInternet }) {
+            return manager.sendData(data, to: peer.identifier)
+        }
+        // If no peer with internet, send to any connected peer
+        if let peer = manager.connectedPeers.first {
+            return manager.sendData(data, to: peer.identifier)
+        }
+        return false
     }
 }
 

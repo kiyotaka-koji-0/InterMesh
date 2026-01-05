@@ -2,8 +2,13 @@
 package intermesh
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"time"
 
 	"github.com/kiyotaka-koji-0/intermesh/pkg/mesh"
@@ -13,6 +18,7 @@ import (
 type MobileApp struct {
 	app             *mesh.MeshApp
 	bleProxyHandler *BLEProxyHandler
+	httpProxy       *HTTPProxyServer
 }
 
 // MobileConnectionListener implements ConnectionListener for mobile callbacks
@@ -61,6 +67,7 @@ func NewMobileApp(nodeID, nodeName, ip, mac string) *MobileApp {
 		app: mesh.NewMeshApp(nodeID, nodeName, ip, mac),
 	}
 	mobileApp.bleProxyHandler = NewBLEProxyHandler(nodeID, mobileApp)
+	mobileApp.httpProxy = NewHTTPProxyServer(mobileApp)
 	return mobileApp
 }
 
@@ -71,6 +78,9 @@ func (ma *MobileApp) Start() error {
 
 // Stop gracefully stops the mesh application
 func (ma *MobileApp) Stop() {
+	if ma.httpProxy != nil {
+		ma.httpProxy.Stop()
+	}
 	ma.app.Stop()
 }
 
@@ -118,6 +128,11 @@ func (ma *MobileApp) HasInternet() bool {
 	return ma.app.Node.HasInternet
 }
 
+// HasAnyInternet returns whether the device has any internet (direct or mesh)
+func (ma *MobileApp) HasAnyInternet() bool {
+	return ma.app.Node.HasInternet || ma.app.InternetClient.IsConnected()
+}
+
 // RequestInternetAccess requests internet access through the mesh network
 func (ma *MobileApp) RequestInternetAccess() (string, error) {
 	success := ma.app.RequestInternetAccess()
@@ -134,10 +149,6 @@ func (ma *MobileApp) ReleaseInternetAccess(proxyID string) {
 
 // RegisterBLEProxy registers a BLE peer as an available proxy
 func (ma *MobileApp) RegisterBLEProxy(peerID, peerIP, peerMAC string, hasInternet bool) {
-	if !hasInternet {
-		return
-	}
-
 	peer := &mesh.Peer{
 		NodeID:      peerID,
 		IP:          peerIP,
@@ -147,7 +158,12 @@ func (ma *MobileApp) RegisterBLEProxy(peerID, peerIP, peerMAC string, hasInterne
 		RSSI:        -50, // Reasonable BLE RSSI value
 	}
 
-	ma.app.ProxyManager.RegisterProxy(peer)
+	// Add to node's peers so it's visible to discovery
+	ma.app.Node.AddPeer(peer)
+
+	if hasInternet {
+		ma.app.ProxyManager.RegisterProxy(peer)
+	}
 }
 
 // UnregisterBLEProxy unregisters a BLE peer as proxy
@@ -163,6 +179,30 @@ func (ma *MobileApp) HandleBLEProxyMessage(senderID string, data []byte) error {
 // SetBLEMessageSender sets the callback for sending BLE messages
 func (ma *MobileApp) SetBLEMessageSender(sender func(peerID string, messageType string, data []byte) error) {
 	ma.bleProxyHandler.SetBLEMessageSender(sender)
+}
+
+// BLEMessageCallback is a simple callback interface for mobile platforms
+type BLEMessageCallback interface {
+	SendMessage(message string) bool
+}
+
+// SetSimpleBLEMessageSender sets a simple callback for sending BLE messages
+// This is easier to use from iOS/Android than the full SetBLEMessageSender
+func (ma *MobileApp) SetSimpleBLEMessageSender(callback BLEMessageCallback) {
+	if callback == nil {
+		ma.bleProxyHandler.SetBLEMessageSender(nil)
+		return
+	}
+
+	// Wrap the simple callback in the full interface
+	ma.bleProxyHandler.SetBLEMessageSender(func(peerID string, messageType string, data []byte) error {
+		// For HTTP tunnel, the data is already the JSON message
+		message := string(data)
+		if callback.SendMessage(message) {
+			return nil
+		}
+		return fmt.Errorf("failed to send BLE message")
+	})
 }
 
 // RequestInternetThroughBLE requests internet access through a BLE proxy
@@ -201,6 +241,120 @@ func (ma *MobileApp) ExecuteProxyRequest(requestJSON string) (string, error) {
 // ParseProxyResponseBody extracts just the body from a proxy response JSON
 func (ma *MobileApp) ParseProxyResponseBody(responseJSON string) string {
 	return ma.bleProxyHandler.ParseProxyResponseBody(responseJSON)
+}
+
+// StartHTTPProxy starts the local HTTP proxy server on the specified port
+// Configure your browser/apps to use 127.0.0.1:<port> as HTTP proxy
+func (ma *MobileApp) StartHTTPProxy(port int64) error {
+	return ma.httpProxy.Start(int(port))
+}
+
+// StopHTTPProxy stops the local HTTP proxy server
+func (ma *MobileApp) StopHTTPProxy() {
+	ma.httpProxy.Stop()
+}
+
+// IsHTTPProxyRunning returns whether the HTTP proxy is running
+func (ma *MobileApp) IsHTTPProxyRunning() bool {
+	return ma.httpProxy.IsRunning()
+}
+
+// GetHTTPProxyPort returns the HTTP proxy port
+func (ma *MobileApp) GetHTTPProxyPort() int64 {
+	return int64(ma.httpProxy.GetPort())
+}
+
+// HandleTunnelResponse handles incoming tunnel response from BLE (for proxy client)
+func (ma *MobileApp) HandleTunnelResponse(responseJSON string) error {
+	return ma.httpProxy.HandleTunnelResponse(responseJSON)
+}
+
+// ExecuteTunnelRequest executes a tunnel request (for device with internet)
+func (ma *MobileApp) ExecuteTunnelRequest(requestJSON string) (string, error) {
+	return ma.executeTunnelRequestInternal(requestJSON)
+}
+
+func (ma *MobileApp) executeTunnelRequestInternal(reqJSON string) (string, error) {
+	var req TunnelRequest
+	err := json.Unmarshal([]byte(reqJSON), &req)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal request: %w", err)
+	}
+
+	// 1. Try local internet first
+	if ma.HasInternet() {
+		// Handle TUNNEL method for HTTPS
+		if req.Method == "TUNNEL" {
+			return executeTunnelData(&req)
+		}
+		// Execute regular HTTP request
+		return executeHTTPTunnel(&req)
+	}
+
+	// 2. If no local internet, try to relay through the mesh internet client
+	if ma.app.InternetClient.IsConnected() {
+		return ma.relayTunnelToMesh(&req)
+	}
+
+	return createErrorResponse(req.ID, "No internet access or mesh proxy available")
+}
+
+func (ma *MobileApp) relayTunnelToMesh(req *TunnelRequest) (string, error) {
+	// Decode body
+	var body io.Reader
+	if req.Body != "" {
+		bodyData, err := base64.StdEncoding.DecodeString(req.Body)
+		if err == nil && len(bodyData) > 0 {
+			body = bytes.NewReader(bodyData)
+		}
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequest(req.Method, req.URL, body)
+	if err != nil {
+		return createErrorResponse(req.ID, fmt.Sprintf("Invalid bridged request: %v", err))
+	}
+
+	// Set headers
+	for key, value := range req.Headers {
+		httpReq.Header.Set(key, value)
+	}
+
+	// Execute through Mesh InternetClient
+	resp, err := ma.app.InternetClient.DoRequest(httpReq)
+	if err != nil {
+		return createErrorResponse(req.ID, fmt.Sprintf("Mesh tunnel relay failed: %v", err))
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return createErrorResponse(req.ID, fmt.Sprintf("Failed to read mesh tunnel response: %v", err))
+	}
+
+	// Create response
+	tunnelResp := &TunnelResponse{
+		ID:         req.ID,
+		StatusCode: resp.StatusCode,
+		Status:     resp.Status,
+		Headers:    make(map[string]string),
+		Body:       base64.StdEncoding.EncodeToString(respBody),
+	}
+
+	// Copy headers
+	for key, values := range resp.Header {
+		if len(values) > 0 {
+			tunnelResp.Headers[key] = values[0]
+		}
+	}
+
+	respJSON, err := json.Marshal(tunnelResp)
+	if err != nil {
+		return createErrorResponse(req.ID, fmt.Sprintf("Failed to marshal tunnel response: %v", err))
+	}
+
+	return string(respJSON), nil
 }
 
 // GetNetworkStats returns current network statistics
