@@ -2,8 +2,11 @@ package com.intermesh.app
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -19,6 +22,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
+import intermesh.BLEMessageCallback
 import intermesh.Intermesh
 import intermesh.MobileApp
 import java.util.UUID
@@ -610,12 +614,24 @@ class MainActivity : AppCompatActivity() {
                 object : Runnable {
                     override fun run() {
                         if (isConnected) {
+                            // Update internet status in Go core
+                            val hasInternet = checkInternetAccess()
+                            mobileApp.setInternetStatus(hasInternet)
+
                             updatePeerCount()
                             mainHandler.postDelayed(this, 2000) // Update every 2 seconds
                         }
                     }
                 }
         mainHandler.post(statsUpdateRunnable!!)
+    }
+
+    private fun checkInternetAccess(): Boolean {
+        val connectivityManager =
+                getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     private fun stopStatsUpdate() {
@@ -804,10 +820,12 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Check if we have a proxy peer available
-        val hasProxy = blePeers.values.any { it.hasInternet }
-        if (!hasProxy) {
-            showMessage("No BLE proxy peers available. Connect to a device with internet first.")
+        // Check if we have internet (local or mesh)
+        val hasInternet = mobileApp.hasAnyInternet()
+        val hasBLEProxy = blePeers.values.any { it.hasInternet }
+
+        if (!hasInternet && !hasBLEProxy) {
+            showMessage("No internet access or BLE proxy peers available.")
             return
         }
 
@@ -828,18 +846,24 @@ class MainActivity : AppCompatActivity() {
                         try {
                             // Set the BLE message sender callback
                             mobileApp.setSimpleBLEMessageSender(
-                                    object : intermesh.Intermesh.BLEMessageCallback {
+                                    object : BLEMessageCallback {
                                         override fun sendMessage(message: String?): Boolean {
                                             if (message == null) return false
 
-                                            // Find a peer with internet to send to
+                                            // Find a peer with internet to send to (if we don't
+                                            // have local internet)
+                                            if (mobileApp.hasInternet()) {
+                                                return false // Should use local internet, callback
+                                                // shouldn't be called
+                                            }
+
                                             val proxyPeer =
                                                     blePeers.values.find { it.hasInternet }
                                                             ?: blePeers.values.firstOrNull()
                                                                     ?: return false
 
-                                            return bleManager?.sendData(
-                                                    proxyPeer.deviceAddress,
+                                            return bleManager?.sendMessage(
+                                                    proxyPeer.address,
                                                     message.toByteArray(Charsets.UTF_8)
                                             )
                                                     ?: false
@@ -872,9 +896,6 @@ class MainActivity : AppCompatActivity() {
             proxyButton.text = "Start Proxy"
             proxyStatusText.text = "Not running"
             proxyStatusText.setTextColor(getColor(R.color.textSecondary))
-            val internetStatus = mobileApp.hasAnyInternet()
-            internetStatusText.text = if (internetStatus) "Available" else "Unavailable"
-            internetStatusText.setTextColor(if (internetStatus) Color.GREEN else Color.RED)
             proxyInstructions.visibility = View.GONE
         }
     }

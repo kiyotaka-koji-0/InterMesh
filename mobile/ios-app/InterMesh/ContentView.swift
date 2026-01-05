@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Intermesh
+import Network
 
 struct ContentView: View {
     @StateObject private var meshManager = MeshManager()
@@ -795,9 +796,21 @@ class MeshManager: ObservableObject {
                 DispatchQueue.main.async {
                     self.peerCount = Int(stats.peerCount)
                     self.proxyCount = Int(stats.availableProxies)
+                    
+                    // Update internet status in Go core
+                    let hasInternet = self.checkInternetAccess()
+                    app.setInternetStatus(hasInternet)
                 }
             }
         }
+    }
+    
+    private func checkInternetAccess() -> Bool {
+        // Simple check for simulation or basic testing
+        // In a real app, we'd use NWPathMonitor for continuous tracking
+        // For now, we'll just check if we have a valid IP that's not 0.0.0.0
+        let ip = getIPAddress() ?? "0.0.0.0"
+        return ip != "0.0.0.0" && ip != "127.0.0.1"
     }
     
     private func stopUpdatingStats() {
