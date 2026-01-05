@@ -231,10 +231,59 @@
         android:textSize="14sp"
         style="@style/Widget.Material3.Button.OutlinedButton"
         app:cornerRadius="12dp"
-        android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/sharingCard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- VPN Toggle Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/vpnCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/requestInternetButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="System-Wide VPN"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/textPrimary"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Route all app traffic through mesh"
+                    android:textSize="12sp"
+                    android:textColor="@color/textSecondary"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/vpnSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- HTTP Proxy Card -->
     <com.google.android.material.card.MaterialCardView
@@ -244,7 +293,7 @@
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/requestInternetButton"
+        app:layout_constraintTop_toBottomOf="@id/vpnCard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 

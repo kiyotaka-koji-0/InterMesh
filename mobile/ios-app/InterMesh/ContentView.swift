@@ -8,6 +8,7 @@
 import SwiftUI
 import Intermesh
 import Network
+import NetworkExtension
 
 struct ContentView: View {
     @StateObject private var meshManager = MeshManager()
@@ -229,6 +230,23 @@ struct ContentView: View {
                         }
                         .disabled(!meshManager.isConnected && multipeerManager.connectedPeers.isEmpty && bleManager.connectedPeers.isEmpty)
                         .opacity((meshManager.isConnected || !multipeerManager.connectedPeers.isEmpty || !bleManager.connectedPeers.isEmpty) ? 1.0 : 0.5)
+                        
+                        // VPN Toggle
+                        VStack(spacing: 10) {
+                            Toggle("System-Wide VPN", isOn: Binding(
+                                get: { meshManager.isVPNEnabled },
+                                set: { _ in meshManager.toggleVPN() }
+                            ))
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            
+                            if meshManager.isVPNEnabled {
+                                Text("All traffic is being routed through mesh")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            }
+                        }
                         
                         // HTTP Proxy Section
                         VStack(alignment: .leading, spacing: 10) {
@@ -669,12 +687,16 @@ class MeshManager: ObservableObject {
     @Published var successMessage: String = ""
     @Published var isHTTPProxyRunning = false
     @Published var httpProxyPort: Int = 8080
+    @Published var isVPNEnabled = false
+    
+    private var vpnManager: NETunnelProviderManager?
     
     var mobileApp: IntermeshMobileApp?  // Expose as public property
     private var statsTimer: Timer?
     
     init() {
         setupMeshApp()
+        setupVPN()
     }
     
     deinit {
@@ -908,6 +930,70 @@ class MeshManager: ObservableObject {
                     self.statusMessage = "Request sent to \(proxy.name), waiting for response..."
                 } else {
                     self.errorMessage = "Failed to send request via BLE"
+                }
+            }
+        }
+    }
+    
+    // MARK: - VPN Management
+    
+    private func setupVPN() {
+        NETunnelProviderManager.loadAllFromPreferences { [weak self] managers, error in
+            guard let self = self else { return }
+            if let managers = managers, let manager = managers.first {
+                self.vpnManager = manager
+                self.isVPNEnabled = (manager.connection.status == .connected || manager.connection.status == .connecting)
+            } else {
+                let manager = NETunnelProviderManager()
+                let protocolConfiguration = NETunnelProviderProtocol()
+                protocolConfiguration.providerBundleIdentifier = "com.intermesh.app.extension"
+                protocolConfiguration.serverAddress = "intermesh.local"
+                manager.protocolConfiguration = protocolConfiguration
+                manager.localizedDescription = "InterMesh VPN"
+                manager.isEnabled = true
+                
+                manager.saveToPreferences { error in
+                    if let error = error {
+                        print("Failed to save VPN preference: \(error.localizedDescription)")
+                    } else {
+                        self.vpnManager = manager
+                    }
+                }
+            }
+        }
+        
+        // Listen for VPN status changes
+        NotificationCenter.default.addObserver(forName: .NEVPNStatusDidChange, object: nil, queue: .main) { [weak self] _ in
+            guard let self = self, let status = self.vpnManager?.connection.status else { return }
+            self.isVPNEnabled = (status == .connected || status == .connecting)
+        }
+    }
+    
+    func toggleVPN() {
+        guard let manager = vpnManager else {
+            errorMessage = "VPN not configured"
+            showError = true
+            isVPNEnabled = false
+            return
+        }
+        
+        manager.loadFromPreferences { [weak self] error in
+            guard let self = self else { return }
+            if let error = error {
+                self.errorMessage = "Failed to load VPN: \(error.localizedDescription)"
+                self.showError = true
+                return
+            }
+            
+            if self.isVPNEnabled {
+                manager.connection.stopVPNTunnel()
+            } else {
+                do {
+                    try manager.connection.startVPNTunnel()
+                } catch {
+                    self.errorMessage = "Failed to start VPN: \(error.localizedDescription)"
+                    self.showError = true
+                    self.isVPNEnabled = false
                 }
             }
         }

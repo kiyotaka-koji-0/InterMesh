@@ -1,9 +1,5 @@
 [
     {
-        "merged": "/home/kiyotaka/.gradle/daemon/8.5-rc-4/com.intermesh.app-mergeDebugResources-30:/layout/activity_main.xml",
-        "source": "/home/kiyotaka/.gradle/daemon/8.5-rc-4/com.intermesh.app-main-33:/layout/activity_main.xml"
-    },
-    {
         "merged": "com.intermesh.app-mergeDebugResources-30:/layout/activity_main.xml",
         "source": "com.intermesh.app-main-33:/layout/activity_main.xml"
     }

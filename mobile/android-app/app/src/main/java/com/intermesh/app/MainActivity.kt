@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var proxyButton: MaterialButton
     private lateinit var proxyStatusText: TextView
     private lateinit var proxyInstructions: TextView
+    private lateinit var vpnSwitch: SwitchMaterial
 
     // WiFi Direct manager for peer-to-peer discovery
     private lateinit var wifiDirectManager: WifiDirectManager
@@ -112,6 +114,7 @@ class MainActivity : AppCompatActivity() {
         proxyButton = findViewById(R.id.proxyButton)
         proxyStatusText = findViewById(R.id.proxyStatusText)
         proxyInstructions = findViewById(R.id.proxyInstructions)
+        vpnSwitch = findViewById(R.id.vpnSwitch)
 
         deviceIdText.text = "Device ID: ${deviceId.takeLast(12)}"
     }
@@ -148,6 +151,13 @@ class MainActivity : AppCompatActivity() {
 
         proxyButton.setOnClickListener { toggleHTTPProxy() }
 
+        vpnSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                prepareVPN()
+            } else {
+                stopVPN()
+            }
+        }
         // Make peers count clickable to show peer list
         peersCountText.setOnClickListener {
             if (p2pPeers.isNotEmpty()) {
@@ -720,20 +730,58 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateConnectionStatus(connected: Boolean) {
         isConnected = connected
-
-        if (connected) {
-            statusText.text = "Connected"
-            statusText.setTextColor(getColor(R.color.primary))
-            connectButton.text = "Disconnect"
-        } else {
+        if (!connected) {
+            vpnSwitch.isChecked = false
+            stopVPN()
             statusText.text = "Disconnected"
             statusText.setTextColor(getColor(R.color.textSecondary))
             connectButton.text = "Connect to Mesh"
             peersCountText.text = "0"
             proxiesCountText.text = "0"
+        } else {
+            statusText.text = "Connected"
+            statusText.setTextColor(getColor(R.color.primary))
+            connectButton.text = "Disconnect"
+        }
+        updateStats()
+    }
+
+    private fun prepareVPN() {
+        val intent = VpnService.prepare(this)
+        if (intent != null) {
+            vpnPermissionLauncher.launch(intent)
+        } else {
+            startVPN()
+        }
+    }
+
+    private val vpnPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    startVPN()
+                } else {
+                    vpnSwitch.isChecked = false
+                    showMessage("VPN permission denied")
+                }
+            }
+
+    private fun startVPN() {
+        if (!::mobileApp.isInitialized || !isConnected) {
+            showMessage("Connect to mesh first")
+            vpnSwitch.isChecked = false
+            return
         }
 
-        updateStats()
+        val intent = Intent(this, InterMeshVpnService::class.java)
+        startService(intent)
+        showMessage("VPN Enabled")
+    }
+
+    private fun stopVPN() {
+        val intent = Intent(this, InterMeshVpnService::class.java)
+        intent.action = InterMeshVpnService.ACTION_STOP
+        startService(intent)
+        showMessage("VPN Disabled")
     }
 
     private fun updateStats() {

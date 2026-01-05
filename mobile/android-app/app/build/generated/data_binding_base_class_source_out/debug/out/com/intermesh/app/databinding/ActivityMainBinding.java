@@ -73,6 +73,12 @@ public final class ActivityMainBinding implements ViewBinding {
   @NonNull
   public final TextView titleText;
 
+  @NonNull
+  public final MaterialCardView vpnCard;
+
+  @NonNull
+  public final SwitchMaterial vpnSwitch;
+
   private ActivityMainBinding(@NonNull ConstraintLayout rootView,
       @NonNull MaterialButton connectButton, @NonNull TextView deviceIdText,
       @NonNull TextView messageText, @NonNull TextView peersCountText,
@@ -81,7 +87,8 @@ public final class ActivityMainBinding implements ViewBinding {
       @NonNull TextView proxyStatusText, @NonNull MaterialButton requestInternetButton,
       @NonNull MaterialCardView sharingCard, @NonNull SwitchMaterial sharingSwitch,
       @NonNull MaterialCardView statsCard, @NonNull MaterialCardView statusCard,
-      @NonNull TextView statusLabel, @NonNull TextView statusText, @NonNull TextView titleText) {
+      @NonNull TextView statusLabel, @NonNull TextView statusText, @NonNull TextView titleText,
+      @NonNull MaterialCardView vpnCard, @NonNull SwitchMaterial vpnSwitch) {
     this.rootView = rootView;
     this.connectButton = connectButton;
     this.deviceIdText = deviceIdText;
@@ -100,6 +107,8 @@ public final class ActivityMainBinding implements ViewBinding {
     this.statusLabel = statusLabel;
     this.statusText = statusText;
     this.titleText = titleText;
+    this.vpnCard = vpnCard;
+    this.vpnSwitch = vpnSwitch;
   }
 
   @Override
@@ -231,10 +240,22 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.vpnCard;
+      MaterialCardView vpnCard = ViewBindings.findChildViewById(rootView, id);
+      if (vpnCard == null) {
+        break missingId;
+      }
+
+      id = R.id.vpnSwitch;
+      SwitchMaterial vpnSwitch = ViewBindings.findChildViewById(rootView, id);
+      if (vpnSwitch == null) {
+        break missingId;
+      }
+
       return new ActivityMainBinding((ConstraintLayout) rootView, connectButton, deviceIdText,
           messageText, peersCountText, proxiesCountText, proxyButton, proxyCard, proxyInstructions,
           proxyStatusText, requestInternetButton, sharingCard, sharingSwitch, statsCard, statusCard,
-          statusLabel, statusText, titleText);
+          statusLabel, statusText, titleText, vpnCard, vpnSwitch);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

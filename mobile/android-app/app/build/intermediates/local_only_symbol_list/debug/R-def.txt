@@ -24,6 +24,8 @@ id statusCard
 id statusLabel
 id statusText
 id titleText
+id vpnCard
+id vpnSwitch
 layout activity_main
 mipmap ic_launcher
 mipmap ic_launcher_round

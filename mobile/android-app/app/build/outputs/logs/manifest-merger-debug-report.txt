@@ -1,10 +1,10 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
-MERGED from [intermesh.aar] /home/kiyotaka/.gradle/caches/transforms-3/e6f8dd07f1ef32e8434452f4e98ec55d/transformed/jetified-intermesh/AndroidManifest.xml:1:1-2:50
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-58:12
+INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-58:12
+INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-58:12
+INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:2:1-58:12
+MERGED from [intermesh.aar] /home/kiyotaka/.gradle/caches/transforms-3/63110244542343cc4d0f84f5068f28e2/transformed/jetified-intermesh/AndroidManifest.xml:1:1-2:50
 MERGED from [androidx.databinding:viewbinding:8.1.0] /home/kiyotaka/.gradle/caches/transforms-3/2f5af214b2286cb14322f1c131676295/transformed/jetified-viewbinding-8.1.0/AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.material:material:1.11.0] /home/kiyotaka/.gradle/caches/transforms-3/bde88e4960446673983d90ab76a41daa/transformed/material-1.11.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /home/kiyotaka/.gradle/caches/transforms-3/6b9bd06b7ef1dcce4c57fb6f7e07c444/transformed/constraintlayout-2.1.4/AndroidManifest.xml:2:1-11:12
@@ -128,8 +128,8 @@ ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/ap
 	android:name
 		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:28:19-63
 application
-ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:5-47:19
-INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:5-47:19
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:5-56:19
+INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:30:5-56:19
 MERGED from [com.google.android.material:material:1.11.0] /home/kiyotaka/.gradle/caches/transforms-3/bde88e4960446673983d90ab76a41daa/transformed/material-1.11.0/AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.11.0] /home/kiyotaka/.gradle/caches/transforms-3/bde88e4960446673983d90ab76a41daa/transformed/material-1.11.0/AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /home/kiyotaka/.gradle/caches/transforms-3/6b9bd06b7ef1dcce4c57fb6f7e07c444/transformed/constraintlayout-2.1.4/AndroidManifest.xml:9:5-20
@@ -182,12 +182,28 @@ category#android.intent.category.LAUNCHER
 ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:44:17-77
 	android:name
 		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:44:27-74
+service#com.intermesh.app.InterMeshVpnService
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:47:9-55:19
+	android:enabled
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:49:13-35
+	android:exported
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:50:13-37
+	android:permission
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:51:13-69
+	android:name
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:48:13-48
+intent-filter#action:name:android.net.VpnService
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:52:13-54:29
+action#android.net.VpnService
+ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:53:17-65
+	android:name
+		ADDED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml:53:25-62
 uses-sdk
 INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml
 INJECTED from /home/kiyotaka/Documents/Coding_Repos/InterMesh/mobile/android-app/app/src/main/AndroidManifest.xml
-MERGED from [intermesh.aar] /home/kiyotaka/.gradle/caches/transforms-3/e6f8dd07f1ef32e8434452f4e98ec55d/transformed/jetified-intermesh/AndroidManifest.xml:2:1-39
-MERGED from [intermesh.aar] /home/kiyotaka/.gradle/caches/transforms-3/e6f8dd07f1ef32e8434452f4e98ec55d/transformed/jetified-intermesh/AndroidManifest.xml:2:1-39
+MERGED from [intermesh.aar] /home/kiyotaka/.gradle/caches/transforms-3/63110244542343cc4d0f84f5068f28e2/transformed/jetified-intermesh/AndroidManifest.xml:2:1-39
+MERGED from [intermesh.aar] /home/kiyotaka/.gradle/caches/transforms-3/63110244542343cc4d0f84f5068f28e2/transformed/jetified-intermesh/AndroidManifest.xml:2:1-39
 MERGED from [androidx.databinding:viewbinding:8.1.0] /home/kiyotaka/.gradle/caches/transforms-3/2f5af214b2286cb14322f1c131676295/transformed/jetified-viewbinding-8.1.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.databinding:viewbinding:8.1.0] /home/kiyotaka/.gradle/caches/transforms-3/2f5af214b2286cb14322f1c131676295/transformed/jetified-viewbinding-8.1.0/AndroidManifest.xml:5:5-44
 MERGED from [com.google.android.material:material:1.11.0] /home/kiyotaka/.gradle/caches/transforms-3/bde88e4960446673983d90ab76a41daa/transformed/material-1.11.0/AndroidManifest.xml:20:5-44

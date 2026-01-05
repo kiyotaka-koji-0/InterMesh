@@ -72,6 +72,16 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name="com.intermesh.app.InterMeshVpnService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_VPN_SERVICE" >
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="com.intermesh.app.androidx-startup"
