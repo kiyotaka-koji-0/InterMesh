@@ -16,7 +16,8 @@ targets:
     dependencies:
       - target: InterMeshPacketTunnel
       - framework: Intermesh.xcframework
-    entitlements: InterMesh.entitlements
+    entitlements:
+      path: InterMesh.entitlements
 
   InterMeshPacketTunnel:
     type: app-extension
@@ -29,4 +30,5 @@ targets:
       INFOPLIST_FILE: InterMeshPacketTunnel/Info.plist
     dependencies:
       - framework: Intermesh.xcframework
-    entitlements: InterMeshPacketTunnel.entitlements
+    entitlements:
+      path: InterMeshPacketTunnel.entitlements
