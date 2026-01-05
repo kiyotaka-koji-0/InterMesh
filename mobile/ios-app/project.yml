@@ -1,6 +1,7 @@
 name: InterMesh
 options:
   bundleIdPrefix: com.intermesh
+  xcodeVersion: "15.0"
 targets:
   InterMesh:
     type: application
