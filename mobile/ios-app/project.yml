@@ -16,11 +16,10 @@ targets:
     dependencies:
       - target: InterMeshPacketTunnel
       - framework: Intermesh.xcframework
-    entitlements:
-      path: InterMesh.entitlements
+    entitlements: InterMesh.entitlements
 
   InterMeshPacketTunnel:
-    type: app-extension.network-extension
+    type: app-extension
     platform: iOS
     deploymentTarget: "14.0"
     sources: 
@@ -30,5 +29,4 @@ targets:
       INFOPLIST_FILE: InterMeshPacketTunnel/Info.plist
     dependencies:
       - framework: Intermesh.xcframework
-    entitlements:
-      path: InterMeshPacketTunnel.entitlements
+    entitlements: InterMeshPacketTunnel.entitlements
