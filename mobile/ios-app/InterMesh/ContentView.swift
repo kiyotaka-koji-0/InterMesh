@@ -939,24 +939,47 @@ class MeshManager: ObservableObject {
     
     private func setupVPN() {
         NETunnelProviderManager.loadAllFromPreferences { [weak self] managers, error in
-            guard let self = self else { return }
-            if let managers = managers, let manager = managers.first {
-                self.vpnManager = manager
-                self.isVPNEnabled = (manager.connection.status == .connected || manager.connection.status == .connecting)
-            } else {
-                let manager = NETunnelProviderManager()
-                let protocolConfiguration = NETunnelProviderProtocol()
-                protocolConfiguration.providerBundleIdentifier = "com.intermesh.app.extension"
-                protocolConfiguration.serverAddress = "intermesh.local"
-                manager.protocolConfiguration = protocolConfiguration
-                manager.localizedDescription = "InterMesh VPN"
-                manager.isEnabled = true
+            DispatchQueue.main.async {
+                guard let self = self else { return }
                 
-                manager.saveToPreferences { error in
-                    if let error = error {
-                        print("Failed to save VPN preference: \(error.localizedDescription)")
-                    } else {
-                        self.vpnManager = manager
+                if let error = error {
+                    self.errorMessage = "Failed to load VPN preferences: \(error.localizedDescription)"
+                    self.showError = true
+                    return
+                }
+                
+                if let managers = managers, let manager = managers.first {
+                    self.vpnManager = manager
+                    self.isVPNEnabled = (manager.connection.status == .connected || manager.connection.status == .connecting)
+                } else {
+                    let manager = NETunnelProviderManager()
+                    let protocolConfiguration = NETunnelProviderProtocol()
+                    protocolConfiguration.providerBundleIdentifier = "com.intermesh.app.extension"
+                    protocolConfiguration.serverAddress = "intermesh.local"
+                    manager.protocolConfiguration = protocolConfiguration
+                    manager.localizedDescription = "InterMesh VPN"
+                    manager.isEnabled = true
+                    
+                    manager.saveToPreferences { error in
+                        DispatchQueue.main.async {
+                            if let error = error {
+                                self.errorMessage = "Failed to save VPN preference: \(error.localizedDescription)"
+                                self.showError = true
+                            } else {
+                                // Reload to ensure we have a valid, system-connected manager
+                                manager.loadFromPreferences { error in
+                                    DispatchQueue.main.async {
+                                        if let error = error {
+                                            self.errorMessage = "Failed to reload VPN preference: \(error.localizedDescription)"
+                                            self.showError = true
+                                        } else {
+                                            self.vpnManager = manager
+                                            self.statusMessage = "VPN Profile Created"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
