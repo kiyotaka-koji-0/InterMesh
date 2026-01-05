@@ -1,0 +1,34 @@
+name: InterMesh
+options:
+  bundleIdPrefix: com.intermesh
+targets:
+  InterMesh:
+    type: application
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources: 
+      - path: InterMesh
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.intermesh.app
+      MARKETING_VERSION: 1.0.0
+      CURRENT_PROJECT_VERSION: 1
+      INFOPLIST_FILE: InterMesh/Info.plist
+    dependencies:
+      - target: InterMeshPacketTunnel
+      - framework: Intermesh.xcframework
+    entitlements:
+      path: InterMesh.entitlements
+
+  InterMeshPacketTunnel:
+    type: app-extension.network-extension
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources: 
+      - path: InterMeshPacketTunnel
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.intermesh.app.extension
+      INFOPLIST_FILE: InterMeshPacketTunnel/Info.plist
+    dependencies:
+      - framework: Intermesh.xcframework
+    entitlements:
+      path: InterMeshPacketTunnel.entitlements
