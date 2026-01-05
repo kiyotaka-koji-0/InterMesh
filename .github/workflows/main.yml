@@ -70,9 +70,9 @@ jobs:
           which gomobile
           which gobind
 
-      - name: Set up Xcode 16.0
+      - name: Set up Xcode 16.2
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           xcodebuild -version
           sudo xcodebuild -license accept || true
 
