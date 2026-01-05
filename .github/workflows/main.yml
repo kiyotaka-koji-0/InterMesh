@@ -70,9 +70,9 @@ jobs:
           which gomobile
           which gobind
 
-      - name: Set up Xcode
+      - name: Set up Xcode 16.0
         run: |
-          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
           xcodebuild -version
           sudo xcodebuild -license accept || true
 
@@ -109,7 +109,7 @@ jobs:
       - name: Build iOS App and Extension
         working-directory: mobile/ios-app
         run: |
-          # The project is now generated with both targets
+          # Use the selected Xcode 16.0 to build the project
           xcodebuild -project InterMesh.xcodeproj -scheme InterMesh -sdk iphoneos -configuration Release -derivedDataPath ./build/DerivedData -arch arm64 CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO build
 
       - name: Create IPA
