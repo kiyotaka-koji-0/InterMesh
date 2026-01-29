@@ -243,14 +243,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun initializeMesh() {
         try {
+            val localIp = getLocalIpAddress()
+            Log.d(TAG, "Initializing mesh with IP: $localIp")
+
             // Create mobile app instance
             mobileApp =
-                    Intermesh.newMobileApp(
-                            deviceId,
-                            "Android Device",
-                            "192.168.1.100",
-                            "00:00:00:00:00:00"
-                    )
+                    Intermesh.newMobileApp(deviceId, "Android Device", localIp, "00:00:00:00:00:00")
 
             Log.d(TAG, "Mesh initialized successfully")
             showMessage("Mesh system ready")
@@ -642,6 +640,25 @@ class MainActivity : AppCompatActivity() {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    private fun getLocalIpAddress(): String {
+        try {
+            val connectivityManager =
+                    getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val linkProperties =
+                    connectivityManager.getLinkProperties(connectivityManager.activeNetwork)
+
+            linkProperties?.linkAddresses?.forEach { linkAddress ->
+                val address = linkAddress.address
+                if (!address.isLoopbackAddress && address is java.net.Inet4Address) {
+                    return address.hostAddress ?: "127.0.0.1"
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get local IP: ${e.message}")
+        }
+        return "127.0.0.1"
     }
 
     private fun stopStatsUpdate() {

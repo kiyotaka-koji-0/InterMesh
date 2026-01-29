@@ -38,6 +38,14 @@ class InterMeshVpnService : VpnService() {
                 builder.setHttpProxy(ProxyInfo.buildDirectProxy("127.0.0.1", 8080))
             }
 
+            // Exclude our own app from the VPN to allow it to communicate with the mesh
+            // and perform discovery on the local network without being captured by itself.
+            try {
+                builder.addDisallowedApplication(packageName)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to exclude app from VPN: ${e.message}")
+            }
+
             vpnInterface = builder.establish()
             Log.d(TAG, "VPN Interface established")
         } catch (e: Exception) {

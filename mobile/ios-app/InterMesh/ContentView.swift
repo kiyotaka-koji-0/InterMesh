@@ -943,7 +943,11 @@ class MeshManager: ObservableObject {
                 guard let self = self else { return }
                 
                 if let error = error {
-                    self.errorMessage = "Failed to load VPN preferences: \(error.localizedDescription)"
+                    if let vpnError = error as? NEVPNError, vpnError.code == .permissionDenied {
+                        self.errorMessage = "VPN Permission Denied: This app requires a paid Apple Developer account with the 'Network Extensions' capability enabled in its provisioning profile."
+                    } else {
+                        self.errorMessage = "Failed to load VPN preferences: \(error.localizedDescription)"
+                    }
                     self.showError = true
                     return
                 }
@@ -963,7 +967,11 @@ class MeshManager: ObservableObject {
                     manager.saveToPreferences { error in
                         DispatchQueue.main.async {
                             if let error = error {
-                                self.errorMessage = "Failed to save VPN preference: \(error.localizedDescription)"
+                                if let vpnError = error as? NEVPNError, vpnError.code == .permissionDenied {
+                                    self.errorMessage = "VPN Permission Denied: You must use a Paid Developer Account with 'Network Extensions' enabled."
+                                } else {
+                                    self.errorMessage = "Failed to save VPN preference: \(error.localizedDescription)"
+                                }
                                 self.showError = true
                             } else {
                                 // Reload to ensure we have a valid, system-connected manager
